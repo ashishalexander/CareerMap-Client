@@ -57,10 +57,7 @@ const AlternateOtpPage: React.FC = () => {
     const otpCode = otp.join("");
    
     const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`,{otpCode})
-    console.log("OTP entered:", otpCode);
-    console.log(response)
-
-    // router.push("/user/success");
+     router.push("/user/Feed");
   };
 
   const handleResend = async() => {

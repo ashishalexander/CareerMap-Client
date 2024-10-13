@@ -1,14 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import React, { useState,useEffect } from "react";
+import { Mail, Lock, ArrowRight, Router } from "lucide-react";
 import axios from 'axios'
+import { getSession, signIn,signOut,useSession } from 'next-auth/react';
+import { useRouter } from "next/navigation";
+
+
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); 
   const [loading, setLoading] = useState(false); 
+
+  const router = useRouter()
+
+ 
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +25,9 @@ const SignIn: React.FC = () => {
     try{
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signIn`,{email,password})
       console.log("Sign in successful:", response);
+      if(response.status==200){
+        router.push("/user/Feed")
+      }
     }catch(error){
       setError("Failed to sign in" );
       if (axios.isAxiosError(error)) {
@@ -41,11 +52,44 @@ const SignIn: React.FC = () => {
   };
 
   
-  const handleGoogleSignIn = () => {
-    // Implement Google Sign In logic here
-    window.location.href = "/api/auth/google";
-  };
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      const result = await signIn('google', { 
+        redirect: false,
+        callbackUrl: '/user/Feed'
 
+      });
+
+      if (result?.error) {
+        console.error('Google sign in error:', result.error);
+        return;
+      }
+
+      const session = await getSession();
+    if (session) {
+      // Call the save user API route
+      const res = await fetch('/api/save-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: session.user?.name,
+          email: session.user?.email,
+          image: session.user?.image,
+        }),
+      });
+
+      const data = await res.json();
+      console.log(data.message);
+    }
+    } catch (error) {
+      console.error('Google sign in error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
