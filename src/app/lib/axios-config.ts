@@ -32,9 +32,11 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = sessionStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (config.url && !config.url.includes('/api/users/signIn')) {
+      const token = sessionStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -43,10 +45,25 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Function to refresh the access token
+const refreshAccessToken = async () => {
+  try {
+    // This endpoint will use the HttpOnly cookie to refresh the access token
+    const response = await apiClient.post('/api/users/refresh-token');
+    const { accessToken } = response.data; // Get new access token
+    sessionStorage.setItem('accesstoken', accessToken); // Store the new access token
+  } catch (error) {
+    // Handle refresh token failure
+    sessionStorage.removeItem('accesstoken'); // Clear access token on failure
+    return Promise.reject(new ApiError(0, 'Session expired. Please log in again.'));
+  }
+};
+
+
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiErrorResponse>) => {
+  async (error: AxiosError<ApiErrorResponse>) => {
     if (error.response) {
       const status = error.response.status;
       const errorResponse = error.response.data;
@@ -55,8 +72,25 @@ apiClient.interceptors.response.use(
       // Handle specific status codes
       switch (status) {
         case 401:
-          localStorage.removeItem('token');
-          break;
+          try {
+            await refreshAccessToken(); // Attempt to refresh the token
+            const originalRequest = error.config; // Save the original request
+  
+            if (originalRequest) { // Check if originalRequest is defined
+              const token = sessionStorage.getItem('accesstoken'); // Get new access token
+              if (token) {
+                originalRequest.headers.Authorization = `Bearer ${token}`; // Attach new access token
+              }
+              return apiClient(originalRequest); // Retry the original request
+            } else {
+              // Handle the case where originalRequest is undefined
+              return Promise.reject(new ApiError(0, 'Original request is undefined.'));
+            }
+          } catch (refreshError) {
+            // Handle refresh token failure
+            sessionStorage.removeItem('accesstoken'); // Clear access token on failure
+            return Promise.reject(new ApiError(0, 'Session expired. Please log in again.'));
+          }
         case 403:
           break;
         case 404:
@@ -76,8 +110,9 @@ apiClient.interceptors.response.use(
 
 // Define response types for API methods
 export interface ApiResponse<T> {
-  data: T;
+  data: any;
   message?: string;
+  success?:boolean
 }
 
 // API methods with proper typing

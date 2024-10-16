@@ -5,6 +5,7 @@ import { Mail, Lock, ArrowRight, Router } from "lucide-react";
 import axios from 'axios'
 import { getSession, signIn,signOut,useSession } from 'next-auth/react';
 import { useRouter } from "next/navigation";
+import api from '../../lib/axios-config'
 
 
 
@@ -23,9 +24,11 @@ const SignIn: React.FC = () => {
     setError('')
     setLoading(true)
     try{
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signIn`,{email,password})
+      const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signIn`,{email,password})
       console.log("Sign in successful:", response);
-      if(response.status==200){
+      if(response.success){
+        const accessToken = response.data.accessToken;
+        sessionStorage.setItem('accesstoken', accessToken);
         router.push("/user/Feed")
       }
     }catch(error){
