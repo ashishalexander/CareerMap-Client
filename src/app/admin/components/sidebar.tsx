@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, Users, Settings, LogOut } from 'lucide-react';
+import { useRouter } from 'next/router';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -13,7 +14,7 @@ const Sidebar: React.FC = () => {
         <ul className="space-y-2">
           <SidebarItem icon={<Home size={20} />} text="Dashboard" />
           <SidebarItem icon={<Users size={20} />} text="User Management" />
-          <SidebarItem icon={<Settings size={20} />} text="Admin Management" />
+          <SidebarItem icon={<Settings size={20} />} text="Recuriter Management" />
           <SidebarItem icon={<LogOut size={20} />} text="Logout" />
         </ul>
       </nav>

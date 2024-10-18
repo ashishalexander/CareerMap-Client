@@ -7,7 +7,7 @@ import {api} from "@/app/lib/axios-config"
 
 const AlternateOtpPage: React.FC = () => {
   const [otp, setOtp] = useState<string[]>(new Array(4).fill(""));
-  const [timer, setTimer] = useState<number>(30);
+  const [timer, setTimer] = useState<number>(45);
   const [isResendVisible, setIsResendVisible] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
@@ -56,13 +56,19 @@ const AlternateOtpPage: React.FC = () => {
     e.preventDefault();
     const otpCode = otp.join("");
    
-    const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`,{otpCode})
+    try {
+      const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`, { otpCode });
+      console.log(response)
      router.push("/user/Feed");
+  } catch (error) {
+      console.error('Error verifying OTP:', error);
+      // Optionally show an error message to the user
+  }
   };
 
   const handleResend = async() => {
     setOtp(new Array(4).fill(""));
-    setTimer(30);
+    setTimer(45);
     setIsResendVisible(false);
     inputRefs.current[0]?.focus();
     try{

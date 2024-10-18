@@ -24,12 +24,12 @@ const AdminSignIn: React.FC = () => {
           { headers: { 'Content-Type': 'application/json' } }
         );
         // Assuming the response contains a token if sign-in is successful
-        const  token  = response.data.token;
+        const  token  = response.data.accessToken;
   
         if (token) {
           // Store the admin token after sign-in
-          sessionStorage.setItem('adminToken', token);
-          router.push('/admin/dashboard')
+          sessionStorage.setItem('adminAccessToken', token);
+          router.push('/admin/adminPannel/dashboard')
         } else {
           throw new Error('Sign-in failed: No token received');
         }
