@@ -1,38 +1,79 @@
+'use client';
 import React from 'react';
 import { Home, Users, Settings, LogOut } from 'lucide-react';
-import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+// Sidebar item configuration
+const sidebarItems = [
+  { 
+    icon: <Home size={20} />, 
+    label: 'Dashboard', 
+    route: '/admin/adminPannel/dashboard'
+  },
+  { 
+    icon: <Users size={20} />, 
+    label: 'User Management', 
+    route: '/admin/adminPannel/userManagement'
+  },
+  { 
+    icon: <Settings size={20} />, 
+    label: 'Recruiter Management', 
+    route: '/admin/adminPannel/recruiterManagement'
+  },
+  { 
+    icon: <LogOut size={20} />, 
+    label: 'Logout', 
+    route: '/logout'
+  }
+];
 
 interface SidebarItemProps {
   icon: React.ReactNode;
-  text: string;
+  label: string;
+  route: string;
+  isActive: boolean;
 }
 
-const Sidebar: React.FC = () => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, route, isActive }) => {
   return (
-    <aside className="bg-gray-100 w-64 min-h-screen pt-4 px-4">
-      <nav>
-        <ul className="space-y-2">
-          <SidebarItem icon={<Home size={20} />} text="Dashboard" />
-          <SidebarItem icon={<Users size={20} />} text="User Management" />
-          <SidebarItem icon={<Settings size={20} />} text="Recuriter Management" />
-          <SidebarItem icon={<LogOut size={20} />} text="Logout" />
-        </ul>
-      </nav>
-    </aside>
+    <li>
+      <Link
+        href={route}
+        aria-current={isActive ? 'page' : undefined}
+        aria-label={label}
+        className={`flex items-center space-x-3 p-2 rounded-lg font-medium transition-all duration-200 ${
+          isActive 
+            ? 'bg-gray-300 text-blue-600' 
+            : 'text-gray-700 hover:bg-gray-200'
+        }`}
+      >
+        <span className="w-5 h-5">{icon}</span>
+        <span>{label}</span>
+      </Link>
+    </li>
   );
 };
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, text }) => {
+const Sidebar = () => {
+  const pathname = usePathname();
+
   return (
-    <li>
-      <a
-        href="#"
-        className="flex items-center space-x-3 text-gray-700 p-2 rounded-lg font-medium hover:bg-gray-200 focus:bg-gray-200 focus:shadow-outline"
-      >
-        {icon}
-        <span>{text}</span>
-      </a>
-    </li>
+    <aside className="bg-gray-100 w-64 min-h-screen pt-4 px-4 border-r border-gray-200">
+      <nav>
+        <ul className="space-y-2">
+          {sidebarItems.map((item, index) => (
+            <SidebarItem
+              key={index}
+              icon={item.icon}
+              label={item.label}
+              route={item.route}
+              isActive={pathname === item.route}
+            />
+          ))}
+        </ul>
+      </nav>
+    </aside>
   );
 };
 
