@@ -8,6 +8,10 @@ import { emailSignIn,googleSignIn } from "@/app/store/slices/authSlice";
 import { useAppDispatch,useAppSelector } from "@/app/store/store";
 
 
+
+
+
+
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,76 +25,12 @@ const SignIn: React.FC = () => {
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
     dispatch(emailSignIn({email,password}))
-    // setError('')
-    // setLoading(true)
-    // try{
-    //   const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signIn`,{email,password})
-    //   console.log("Sign in successful:", response);
-    //   if(response.status==200){
-    //     router.push("/user/Feed")
-    //   }
-    // }catch(error){
-    //   setError("Failed to sign in" );
-    //   if (axios.isAxiosError(error)) {
-    //     if (error.response) {
-    //       setError(`Failed to sign in: ${error.response.data.message}`);
-    //       console.error("Error signing in:", error.response.data.message);
-    //     } else {
-    //       setError("Failed to sign in: Network error or no response.");
-    //       console.error("Network error:", error.message);
-    //     }
-    //     setTimeout(() => {
-    //       setError('');
-    //     }, 3000); 
-    //   } else {
-    //     setError("An unexpected error occurred.");
-    //     console.error("Unexpected error:", error);
-    //   }
-    // } finally {
-    //   setLoading(false); 
-    // }
     
   };
 
   
   const handleGoogleSignIn = async () => {
     dispatch(googleSignIn())
-    // try {
-    //   setLoading(true);
-    //   const result = await signIn('google', { 
-    //     redirect: false,
-    //     callbackUrl: '/user/Feed'
-
-    //   });
-
-    //   if (result?.error) {
-    //     console.error('Google sign in error:', result.error);
-    //     return;
-    //   }
-
-    //   const session = await getSession();
-    // if (session) {
-    //   // Call the save user API route
-    //   const res = await fetch('/api/save-user', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       name: session.user?.name,
-    //       email: session.user?.email,
-    //       image: session.user?.image,
-    //     }),
-    //   });
-
-    //   const data = await res.json();
-    //   console.log(data.message);
-    // }
-    // } catch (error) {
-    //   console.error('Google sign in error:', error);
-    // } finally {
-    //   setLoading(false);
-    // }
   };
 
   React.useEffect(()=>{
