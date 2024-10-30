@@ -1,6 +1,8 @@
 // app/layout.tsx
 import React from "react";
 import "./globals.css";
+import Providers from './components/Provider'
+
 
 export const metadata = {
   title: "My App",
@@ -15,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* You can add a header, footer, or other shared layout elements here */}
+        <Providers>
         {children}
+
+        </Providers>
       </body>
     </html>
   );
