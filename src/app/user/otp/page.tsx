@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Timer, Send, CheckCircle2 } from "lucide-react";
-import axios from 'axios'
 import {api} from "@/app/lib/axios-config"
+import Swal from 'sweetalert2';
+
 
 const AlternateOtpPage: React.FC = () => {
   const [otp, setOtp] = useState<string[]>(new Array(4).fill(""));
-  const [timer, setTimer] = useState<number>(45);
+  const [timer, setTimer] = useState<number>(30);
   const [isResendVisible, setIsResendVisible] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
@@ -59,24 +60,50 @@ const AlternateOtpPage: React.FC = () => {
     try {
       const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`, { otpCode });
       console.log(response)
-     router.push("/user/Feed");
+      Swal.fire({
+        title: 'OTP Verified!',
+        text: 'You have successfully verified your OTP.',
+        icon: 'success',
+        confirmButtonText: 'Proceed'
+      }).then(() => {
+        // Navigate to the Feed page after the user confirms the alert
+        router.push("/user/Feed");
+      });
   } catch (error) {
       console.error('Error verifying OTP:', error);
       // Optionally show an error message to the user
+      Swal.fire({
+        title: 'Verification Failed!',
+        text: 'The OTP code is incorrect. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'Retry'
+      });
   }
   };
 
   const handleResend = async() => {
     setOtp(new Array(4).fill(""));
-    setTimer(45);
+    setTimer(30);
     setIsResendVisible(false);
     inputRefs.current[0]?.focus();
     try{
       const response = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/resend-otp`)
       console.log('Resend OTP Response:', response);
+      Swal.fire({
+        title: 'OTP Sent!',
+        text: 'A new OTP has been sent to your phone.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
 
     }catch(error){
       console.error('Error resending otp:',error)
+      Swal.fire({
+        title: 'Error!',
+        text: 'There was an error resending the OTP. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'Retry'
+      });
     }
   };
 
