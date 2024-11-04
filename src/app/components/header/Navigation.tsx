@@ -1,3 +1,4 @@
+"use client"
 import Link from 'next/link';
 import { Home, Users, Briefcase, MessageSquare, Bell } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -34,7 +35,7 @@ const NavItem = ({ icon: Icon, text, href, isActive }: NavItemProps) => (
     ];
   
     return (
-      <nav className="hidden md:flex items-center justify-center flex-1">
+      <nav className="hidden md:flex items-center  justify-center flex-1 ml-[115px] space-x-5">
         {navItems.map((item) => (
           <NavItem 
             key={item.href}
