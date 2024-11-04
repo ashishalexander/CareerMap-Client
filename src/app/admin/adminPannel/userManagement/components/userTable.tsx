@@ -14,7 +14,7 @@ interface User {
 }
 
 export function UserTable() {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<Iuser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,10 +34,14 @@ export function UserTable() {
     }
     fetchUsers()
   }, [])
-  const handleBlock = async (userId: string) => {
+  const handleTogle = async (userId: string) => {
     try {
       await api.patch(`/api/admin/blockUser/${userId}`);  
-      setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));  
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, isblocked: !user.isblocked } : user
+        )
+      );
     } catch (err) {
       console.error("Failed to block user:", err);
       setError("Failed to block user");
@@ -62,11 +66,12 @@ export function UserTable() {
       ]}
       actions={(user) => (
         <Button
-          variant="destructive"
+          variant={ "destructive"}
           size="sm"
-          onClick={() => handleBlock(user._id)} 
+          style={{ width: '100px',backgroundColor: user.isblocked ? 'green' : 'red', }} 
+          onClick={() => handleTogle(user._id)} 
         >
-          Block
+          {user.isblocked ? "Unblock" : "Block"}
         </Button>
       )}
     />
