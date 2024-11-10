@@ -1,5 +1,7 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+"use client"
+import React,{useEffect,} from 'react';
+import { useAppDispatch, useAppSelector } from '@/app/store/store';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { signOut } from '../../store/slices/authSlice';
@@ -12,48 +14,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { RootState } from '@/app/store/store';
 
-interface RootState {
-  auth: {
-    user: {
-      name: string;
-      email: string;
-      image: string;
-    } | null;
-  };
-}
 
 export const UserMenu = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((state: RootState) => state.auth.user);
+  const router = useRouter()
 
   const handleSignOut = () => {
     dispatch(signOut());
   };
 
-  if (!user) {
-    return (
-      <Link 
-        href="/signin"
-        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-      >
-        Sign In
-      </Link>
-    );
-  }
+  useEffect(() => {
+    if (!user) {
+      router.push('/user/signIn');
+    }
+  }, [user, router]);
 
+  if (!user) {
+    return null; 
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.image} alt={user.name} />
-          <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+          <AvatarImage src={user.profile?.profilePicture} alt={user.firstName} />
+          <AvatarFallback>{user.firstName?.charAt(0)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.name}</p>
+            <p className="text-sm font-medium">{user.firstName}</p>
             <p className="text-xs text-gray-500">{user.email}</p>
           </div>
         </DropdownMenuLabel>
