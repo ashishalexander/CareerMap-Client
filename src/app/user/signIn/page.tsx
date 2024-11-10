@@ -1,15 +1,11 @@
 "use client";
-import React, { useState} from "react";
+import React, { useState,useEffect} from "react";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { getSession, signIn,signOut,useSession } from 'next-auth/react';
 import { useRouter } from "next/navigation";
 import { useDispatch, UseDispatch,useSelector } from "react-redux";
 import { emailSignIn,googleSignIn } from "@/app/store/slices/authSlice";
 import { useAppDispatch,useAppSelector } from "@/app/store/store";
-
-
-
-
 
 
 const SignIn: React.FC = () => {
@@ -19,25 +15,22 @@ const SignIn: React.FC = () => {
   const router = useRouter()
   const {loading,error,user} = useSelector((state:any)=>state.auth)
 
-
- 
-
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
     dispatch(emailSignIn({email,password}))
     
   };
 
-  
   const handleGoogleSignIn = async () => {
     dispatch(googleSignIn())
   };
 
-  React.useEffect(()=>{
-    if(user){
-      router.push('/user/Feed')
-    }
-  },[user,router])
+  // useEffect(()=>{
+  //   console.log(user)
+  //   if(user){
+  //     router.push('/user/AuthenticatedUser/Home')
+  //   }
+  // },[user,router])
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
