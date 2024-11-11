@@ -35,6 +35,7 @@ export const emailSignIn = createAsyncThunk(
         password,
       });
       const {accessToken,user} = response.data.data
+      sessionStorage.setItem('accessToken', accessToken);
       return {accessToken,user}
     } catch (error:any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to sign in');
@@ -70,7 +71,7 @@ export const googleSignIn = createAsyncThunk<
         `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
         { user:session.user }
       );
-      console.log(JSON.stringify(response))
+      sessionStorage.setItem('accessToken',response.data.accessToken)
       return response.data;
     } catch (error) {
       return rejectWithValue(handleError(error));
