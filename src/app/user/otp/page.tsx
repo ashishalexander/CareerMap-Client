@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Timer, Send, CheckCircle2 } from "lucide-react";
-import {api} from "@/app/lib/axios-config"
 import Swal from 'sweetalert2';
 import { headers } from "next/headers";
+import axios from "axios";
 
 
 const AlternateOtpPage: React.FC = () => {
@@ -64,13 +64,13 @@ const AlternateOtpPage: React.FC = () => {
         console.error("No access token found in session storage.");
         return;
       }
-      const response = await api.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`, { otpCode },
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`, { otpCode },
         {
           headers:{
             Authorization:`Bearer ${token}`
           }
         }
-      );
+      );  
       console.log(response)
       Swal.fire({
         title: 'OTP Verified!',
@@ -104,7 +104,7 @@ const AlternateOtpPage: React.FC = () => {
       return;
     }
     try{
-      const response = await api.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/resend-otp`,
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/users/resend-otp`,
         {
           headers:{
             Authorization:`Bearer ${token}`

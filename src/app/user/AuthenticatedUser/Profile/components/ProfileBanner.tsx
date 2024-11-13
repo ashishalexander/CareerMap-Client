@@ -21,6 +21,7 @@ export const ProfileBanner: FC<ProfileBannerProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
+
 const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   const file = event.target.files?.[0] || null;
   if (file && onBannerUpdate) {

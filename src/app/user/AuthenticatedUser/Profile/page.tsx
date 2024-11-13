@@ -7,13 +7,13 @@ import { ProfileInfo } from './components/ProfileInfo';
 import { ProfileActions } from './components/ProfileActions';
 import { AboutSection } from './components/AboutSession';
 import { ProfileSkeleton } from './components/ProfileLoadSkelt';
-import { updateProfile, fetchUserProfile } from '../../../store/slices/profileSlice'; // Updated import to profileSlice
 import type { RootState } from '../../../store/store';
 import type { Iuser } from '../../../../const/Iuser';
 import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
+import { updateUserBannerUrl } from '@/app/store/slices/authSlice';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -22,14 +22,13 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
   const dispatch = useAppDispatch(); // Use custom useAppDispatch hook
   const currentUser = useAppSelector((state: RootState) => state.auth.user); // Accessing profile from profileSlice
   console.log(JSON.stringify(currentUser))
-  const loading = useAppSelector((state: RootState) => state.profile.loading); // Access loading state from profileSlice
   
   const isOwnProfile: boolean = userId === null || (currentUser !== null && userId === currentUser._id);
   console.log(isOwnProfile+'🤷‍♂️')
 
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
-      await dispatch(updateProfile(updateData)).unwrap(); // Update profile using thunk
+      // await dispatch(updateProfile(updateData)).unwrap(); // Update profile using thunk
     } catch (error) {
       console.error('Failed to update profile:', error);
       // Handle error (show toast notification, etc.)
@@ -38,7 +37,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
 
   const handleBannerUpdate = async (file: File) => {
     const formData = new FormData()
-    formData.append('profile-banner',file)
+    formData.append('file',file)
     try {
           const response = await api.post(`/api/users/upload-profile-banner/${currentUser?._id}`,formData,
             {
@@ -47,16 +46,17 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
               },
             }
           )
-      console.log(response)
+      const imageUrl = response.data
+      dispatch(updateUserBannerUrl(imageUrl))
     } catch (error) {
       console.error('Failed to update banner:', error);
     }
   };
 
   
-  if (loading) {
-    return <ProfileSkeleton />;
-  }
+  // if (loading) {
+  //   return <ProfileSkeleton />;
+  // }
 
   if (!currentUser) {
     return (
@@ -74,8 +74,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
             bannerUrl={currentUser.profile?.bannerImage}
             isOwnProfile={isOwnProfile}
             onBannerUpdate={(file:File) => {
-              // Implement file upload logic and call handleProfileUpdate
-                 handleBannerUpdate(file ); // Example call
+                 handleBannerUpdate(file ); 
             }}
           />
           <ProfileAvatar 
