@@ -13,7 +13,7 @@ import type { Iuser } from '../../../../const/Iuser';
 import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
-
+import api from '../../../lib/axios-config'
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -37,9 +37,17 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
   };
 
   const handleBannerUpdate = async (file: File) => {
+    const formData = new FormData()
+    formData.append('profile-banner',file)
     try {
-      // const uploadedUrl = await uploadImage(file);
-      // await handleProfileUpdate({ bannerImage: uploadedUrl });
+          const response = await api.post(`/api/users/upload-profile-banner/${currentUser?._id}`,formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            }
+          )
+      console.log(response)
     } catch (error) {
       console.error('Failed to update banner:', error);
     }
@@ -65,9 +73,9 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
           <ProfileBanner 
             bannerUrl={currentUser.profile?.bannerImage}
             isOwnProfile={isOwnProfile}
-            onBannerUpdate={(file) => {
+            onBannerUpdate={(file:File) => {
               // Implement file upload logic and call handleProfileUpdate
-                // handleBannerUpdate({profile:{ bannerImage: file }}); // Example call
+                 handleBannerUpdate(file ); // Example call
             }}
           />
           <ProfileAvatar 
