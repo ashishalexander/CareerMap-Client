@@ -52,7 +52,8 @@ const SignupPage: React.FC = () => {
         console.log("Form submitted successfully:", response);
         if (response.status == 200) {
           const token = response.data.token; 
-          sessionStorage.setItem("token", token);
+          console.log(token)
+          sessionStorage.setItem("signupToken",token);
           router.push("/user/otp");
         }
       }

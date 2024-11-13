@@ -25,12 +25,12 @@ const SignIn: React.FC = () => {
     dispatch(googleSignIn())
   };
 
-  // useEffect(()=>{
-  //   console.log(user)
-  //   if(user){
-  //     router.push('/user/AuthenticatedUser/Home')
-  //   }
-  // },[user,router])
+  useEffect(()=>{
+    console.log(user)
+    if(user){
+      router.push('/user/AuthenticatedUser/Home')
+    }
+  },[user,router])
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">

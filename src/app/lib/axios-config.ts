@@ -33,7 +33,7 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (config.url && !config.url.includes('/api/users/signIn')) {
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
