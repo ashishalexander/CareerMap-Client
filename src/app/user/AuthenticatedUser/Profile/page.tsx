@@ -13,7 +13,7 @@ import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
-import { updateUserBannerUrl } from '@/app/store/slices/authSlice';
+import { updateUserBannerUrl,updateUserProfilePicture } from '@/app/store/slices/authSlice';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -53,6 +53,26 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
     }
   };
 
+  const handleAvatarUpdate = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await api.post(
+        `/api/users/upload-profile-avatar/${currentUser?._id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      const imageUrl = response.data;
+      dispatch(updateUserProfilePicture(imageUrl));
+    } catch (error) {
+      console.error('Failed to update profile picture:', error);
+    }
+  };
+
   
   // if (loading) {
   //   return <ProfileSkeleton />;
@@ -80,10 +100,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
           <ProfileAvatar 
             image={currentUser.profile?.profilePicture}
             isOwnProfile={isOwnProfile}
-            onAvatarUpdate={(file) => {
-              // Implement file upload logic and call handleProfileUpdate
-              //  handleBannerUpdate({profile:{ profilePicture: file }}); // Example call
-            }}
+            onAvatarUpdate={handleAvatarUpdate}
           />
         </div>
 
