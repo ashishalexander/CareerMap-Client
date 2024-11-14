@@ -99,6 +99,11 @@ const authSlice = createSlice({
         state.user.profile.profilePicture = action.payload;
       }
     },
+    updateUserProfileInfo: (state, action: PayloadAction<Iuser>)=>{
+      if(state.user){
+        state.user = action.payload
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -132,5 +137,5 @@ const authSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { signOut,updateUserBannerUrl,updateUserProfilePicture } = authSlice.actions;
+export const { signOut,updateUserBannerUrl,updateUserProfilePicture,updateUserProfileInfo } = authSlice.actions;
 export default authSlice.reducer;

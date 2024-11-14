@@ -13,7 +13,7 @@ import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
-import { updateUserBannerUrl,updateUserProfilePicture } from '@/app/store/slices/authSlice';
+import { updateUserBannerUrl,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -28,7 +28,12 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
 
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
-      // await dispatch(updateProfile(updateData)).unwrap(); // Update profile using thunk
+      console.log(JSON.stringify(updateData))
+      const response = await api.post(`/api/users/profile/info/${currentUser?._id}`,updateData)
+      if(response&&response.data){
+        dispatch(updateUserProfileInfo(response.data)); // Update profile using thunk
+
+      }
     } catch (error) {
       console.error('Failed to update profile:', error);
       // Handle error (show toast notification, etc.)
