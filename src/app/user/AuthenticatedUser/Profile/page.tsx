@@ -13,7 +13,7 @@ import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
-import { updateUserBannerUrl,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
+import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -37,6 +37,17 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
     } catch (error) {
       console.error('Failed to update profile:', error);
       // Handle error (show toast notification, etc.)
+    }
+  };
+
+  const handleProfileAbout = async (aboutData: string) => { // Changed to `string`
+    try {
+      const response = await api.post(`/api/users/profile/about/${currentUser?._id}`, { about: aboutData });
+      console.log(response.data);
+      dispatch(updateUserProfileAbout(response.data))
+    } catch (error) {
+      console.error('Failed to update profile about section:', error);
+      // Error handling here
     }
   };
 
@@ -138,7 +149,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
        <AboutSection 
             about={currentUser.profile?.about}
             isOwnProfile={isOwnProfile}
-            onUpdate={(about) => handleProfileUpdate({profile:{ about }})} // Update about section
+            onUpdate={(about) => handleProfileAbout(about)} // Update about section
           />      </div>
 
       {/* Education Section */}
