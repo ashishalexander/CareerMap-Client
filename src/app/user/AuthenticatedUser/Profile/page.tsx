@@ -13,7 +13,7 @@ import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
-import { updateUserBannerUrl } from '@/app/store/slices/authSlice';
+import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -28,10 +28,26 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
 
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
-      // await dispatch(updateProfile(updateData)).unwrap(); // Update profile using thunk
+      console.log(JSON.stringify(updateData))
+      const response = await api.post(`/api/users/profile/info/${currentUser?._id}`,updateData)
+      if(response&&response.data){
+        dispatch(updateUserProfileInfo(response.data)); // Update profile using thunk
+
+      }
     } catch (error) {
       console.error('Failed to update profile:', error);
       // Handle error (show toast notification, etc.)
+    }
+  };
+
+  const handleProfileAbout = async (aboutData: string) => { // Changed to `string`
+    try {
+      const response = await api.post(`/api/users/profile/about/${currentUser?._id}`, { about: aboutData });
+      console.log(response.data);
+      dispatch(updateUserProfileAbout(response.data))
+    } catch (error) {
+      console.error('Failed to update profile about section:', error);
+      // Error handling here
     }
   };
 
@@ -50,6 +66,26 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
       dispatch(updateUserBannerUrl(imageUrl))
     } catch (error) {
       console.error('Failed to update banner:', error);
+    }
+  };
+
+  const handleAvatarUpdate = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await api.post(
+        `/api/users/upload-profile-avatar/${currentUser?._id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      const imageUrl = response.data;
+      dispatch(updateUserProfilePicture(imageUrl));
+    } catch (error) {
+      console.error('Failed to update profile picture:', error);
     }
   };
 
@@ -80,10 +116,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
           <ProfileAvatar 
             image={currentUser.profile?.profilePicture}
             isOwnProfile={isOwnProfile}
-            onAvatarUpdate={(file) => {
-              // Implement file upload logic and call handleProfileUpdate
-              //  handleBannerUpdate({profile:{ profilePicture: file }}); // Example call
-            }}
+            onAvatarUpdate={handleAvatarUpdate}
           />
         </div>
 
@@ -116,7 +149,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
        <AboutSection 
             about={currentUser.profile?.about}
             isOwnProfile={isOwnProfile}
-            onUpdate={(about) => handleProfileUpdate({profile:{ about }})} // Update about section
+            onUpdate={(about) => handleProfileAbout(about)} // Update about section
           />      </div>
 
       {/* Education Section */}

@@ -48,16 +48,18 @@ export const ProfileInfo: FC<ProfileInfoProps> = ({
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await onUpdate(
-        {
-          profile: {
-            headline: formData.headline,
-            location: formData.location,
-            company: formData.company,
-            website: formData.website,
-          },
+      const updateData: Partial<Iuser> = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        profile: {
+          headline: formData.headline,
+          location: formData.location,
+          company: formData.company,
+          website: formData.website,
         }
-      );
+      };
+
+      await onUpdate(updateData);
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update profile:', error);

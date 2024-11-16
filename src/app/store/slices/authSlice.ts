@@ -34,7 +34,7 @@ export const emailSignIn = createAsyncThunk(
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signIn`, {
         email,
         password,
-      });
+      },{withCredentials:true});  
       const {accessToken,user} = response.data.data
       sessionStorage.setItem('accessToken',accessToken)
       return {accessToken,user}
@@ -93,6 +93,21 @@ const authSlice = createSlice({
       if(state.user){ 
         state.user.profile.bannerImage = action.payload
       }
+    },
+    updateUserProfilePicture: (state, action: PayloadAction<string>) => {
+      if (state.user && state.user.profile) {
+        state.user.profile.profilePicture = action.payload;
+      }
+    },
+    updateUserProfileInfo: (state, action: PayloadAction<Iuser>)=>{
+      if(state.user){
+        state.user = action.payload
+      }
+    },
+    updateUserProfileAbout: (state,action:PayloadAction<Iuser>)=>{
+      if(state.user){
+        state.user = action.payload
+      }
     }
   },
   extraReducers: (builder) => {
@@ -127,5 +142,5 @@ const authSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { signOut,updateUserBannerUrl } = authSlice.actions;
+export const { signOut,updateUserBannerUrl,updateUserProfilePicture,updateUserProfileInfo,updateUserProfileAbout } = authSlice.actions;
 export default authSlice.reducer;
