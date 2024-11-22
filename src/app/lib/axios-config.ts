@@ -1,5 +1,8 @@
   import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-  import { useRouter } from 'next/router';
+  import {store} from '../store/store'
+  import { signOut } from '../store/slices/authSlice';
+  import Router from 'next/router'
+  
   interface ApiErrorResponse {
     message: string;
     errors?: Record<string, string[]>;
@@ -105,9 +108,13 @@
       }
     }
   );
-  const logout =()=>{
-    const router = useRouter();
-    router.push('/user/signIn');
+  const logout = async()=>{
+    store.dispatch(signOut());
+    if (typeof window !== 'undefined') {
+      await Router.push('/user/signIn');
+    } else {
+      console.error('Router.push() cannot be used on the server side');
+    }
    }
   // Define response types for API methods
   export interface ApiResponse<T> {
