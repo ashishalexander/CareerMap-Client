@@ -152,8 +152,8 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
     setEditingIndex(index);
     setValue('school', education.school);
     setValue('degree', education.degree);
-    setValue('startDate', education.startDate);
-    setValue('endDate', education.endDate);
+    setValue('startDate', education.startDate ? new Date(education.startDate) : null);
+    setValue('endDate', education.endDate ? new Date(education.endDate) : null);
     setValue('skills', education.skills);
     setIsDialogOpen(true);
   }, [setValue]);
