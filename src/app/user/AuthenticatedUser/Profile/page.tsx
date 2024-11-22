@@ -154,7 +154,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
 
       {/* Education Section */}
       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <EducationProfileComponent isOwnProfile={isOwnProfile} />
+        <EducationProfileComponent isOwnProfile={isOwnProfile} educations={currentUser.profile.Education} />
       </div>
 
        {/* Experience Section */}

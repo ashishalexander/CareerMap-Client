@@ -6,109 +6,173 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePickerDemo } from '@/components/ui/datePicker';
-import { PencilIcon, PlusCircle } from 'lucide-react';
+import { FileDiff, PencilIcon, PlusCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useForm, Controller } from 'react-hook-form';
+import * as z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import api from '@/app/lib/axios-config';
+import { updateUserProfileEducation } from '@/app/store/slices/authSlice';
+import { Trash2 } from 'lucide-react';
+
+// Define the validation schema using zod
+const educationSchema = z.object({
+  school: z.string()
+    .min(1, 'School name is required')
+    .max(100, 'School name must be less than 100 characters'),
+  
+  degree: z.string()
+    .min(1, 'Degree is required')
+    .max(100, 'Degree must be less than 100 characters'),
+  
+  startDate: z.date().nullable(),
+  
+  endDate: z.date().nullable(),
+  
+  skills: z.array(z.string())
+    .refine((val) => val.length > 0, 'At least one skill is required'),
+}).refine((data) => {
+  // Custom validation for date comparison
+  const { startDate, endDate } = data;
+  
+  // If both dates exist, end date must be after start date
+  if (startDate && endDate && endDate <= startDate) {
+    return false;
+  }
+  
+  // If end date exists without start date, that's invalid
+  if (endDate && !startDate) {
+    return false;
+  }
+  
+  return true;
+}, {
+  message: 'Invalid date range',
+  path: ['endDate'], 
+});
+
+type EducationFormData = z.infer<typeof educationSchema>;
 
 export interface IEducation {
-  school?: string;
-  degree?: string;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  skills?: string[];
+  school: string;
+  degree: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  skills: string[];
 }
+
 
 interface EducationProfileComponentProps {
   isOwnProfile: boolean;
+  educations?:{
+            school: string;
+            degree: string;
+            startDate: Date;
+            endDate: Date;
+            skills:[string];
+            _id:string
+  }[];
 }
 
-const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ isOwnProfile }) => {
+interface FormFieldProps {
+  label: string;
+  children: React.ReactNode;
+  error?: string;
+}
+
+interface EducationDisplayProps {
+  education: IEducation;
+  index: string;
+}
+
+const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ isOwnProfile,educations }) => {
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state: RootState) => state.auth);
+  const useSelector = useAppSelector
+  const user = useSelector((state:RootState)=>state.auth.user) 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [formData, setFormData] = useState<IEducation>({
-    school: '',
-    degree: '',
-    startDate: null,
-    endDate: null,
-    skills: [],
-  });
+  const [editingIndex, setEditingIndex] = useState<string | null>(null);
 
-  const formatDate = (date: Date | null | undefined) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
-
-  const handleSaveEducation = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingIndex !== null) {
-        // await dispatch(updateEducation({ index: editingIndex, updatedData: formData }));
-      } else {
-        // await dispatch(createEducation(formData));
-      }
-      setIsDialogOpen(false);
-      setEditingIndex(null);
-      setFormData({
-        school: '',
-        degree: '',
-        startDate: null,
-        endDate: null,
-        skills: [],
-      });
-    } catch (error) {
-      console.error('Failed to save education:', error);
-    }
-  }, [editingIndex, formData, dispatch]);
-
-  const handleStartEdit = useCallback((index: number, education: IEducation) => {
-    setEditingIndex(index);
-    setFormData(education);
-    setIsDialogOpen(true);
-  }, []);
-
-  const handleStartNew = useCallback(() => {
-    setEditingIndex(null);
-    setFormData({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+  } = useForm<EducationFormData>({
+    resolver: zodResolver(educationSchema),
+    defaultValues: {
       school: '',
       degree: '',
       startDate: null,
       endDate: null,
       skills: [],
-    });
+    }
+  });
+
+  const formatDate = (date: Date | null): string => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const handleSaveEducation = useCallback(async (data: EducationFormData) => {
+    try {
+      const Education: IEducation = {
+        school: data.school,
+        degree: data.degree,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        skills: data.skills,
+      };
+      console.log(Education)
+
+      const response = await api.post(`/api/users/profile/education/${user?._id}`,{Education})
+      dispatch(updateUserProfileEducation(response.data))
+      setIsDialogOpen(false);
+      setEditingIndex(null);
+      reset();
+    } catch (error) {
+      console.error('Failed to save education:', error);
+    }
+  }, [editingIndex, reset, dispatch]);
+
+  const handleDeleteEducation = async (index: string) => {
+    try {
+      const response = await api.delete(`/api/users/delete/profile-education/${index}/${user?._id}`);
+       dispatch(updateUserProfileEducation(response.data));
+    } catch (error) {
+      console.error('Failed to delete education:', error);
+    }
+  };
+  const handleStartEdit = useCallback((index: string, education: IEducation) => {
+    setEditingIndex(index);
+    setValue('school', education.school);
+    setValue('degree', education.degree);
+    setValue('startDate', education.startDate);
+    setValue('endDate', education.endDate);
+    setValue('skills', education.skills);
     setIsDialogOpen(true);
-  }, []);
+  }, [setValue]);
 
-  const handleInputChange = useCallback((field: keyof IEducation) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const value = e.target.value;
-    setFormData(prev => ({
-      ...prev,
-      [field]: field === 'skills' ? value.split(',').map(skill => skill.trim()) : value
-    }));
-  }, []);
+  const handleStartNew = useCallback(() => {
+    setEditingIndex(null);
+    reset();
+    setIsDialogOpen(true);
+  }, [reset]);
 
-  const handleDateChange = useCallback((field: 'startDate' | 'endDate') => (date: Date | null) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: date
-    }));
-  }, []);
-
-  const FormField = useCallback(({ label, children }: { label: string; children: React.ReactNode }) => (
+  const FormField: React.FC<FormFieldProps> = useCallback(({ label, children, error }) => (
     <div className="space-y-2">
       <Label>{label}</Label>
       {children}
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   ), []);
 
-  const EducationDisplay = useCallback(({ education, index }: { education: IEducation; index: number }) => (
+  const EducationDisplay: React.FC<EducationDisplayProps> = useCallback(({ education, index }) => (
     <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
       <div className="flex justify-between items-start">
         <div className="space-y-2">
@@ -122,9 +186,10 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
               <p className="text-sm font-medium">Skills</p>
               <p className="text-sm text-gray-600">{education.skills.join(', ')}</p>
             </div>
-          )}
+          )}  
         </div>
         {isOwnProfile && (
+          <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
             size="icon"
@@ -133,10 +198,30 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
           >
             <PencilIcon className="h-4 w-4" />
           </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => handleDeleteEducation(index)}
+            className="hover:bg-red-100 text-black-500"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+          
         )}
       </div>
     </div>
   ), [handleStartEdit, isOwnProfile]);
+
+  const handleSkillsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const skillsArray = e.target.value
+      .split(',')
+      .map(skill => skill.trim())  
+      .filter(skill => skill.length > 0);  
+  
+    setValue('skills', skillsArray);  
+  };
+  
 
   return (
     <Card>
@@ -155,11 +240,11 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
         )}
       </CardHeader>
       <CardContent className="space-y-6">
-        {user?.profile?.Education?.map((education, index) => (
+        {educations?.map((education, index) => (
           <EducationDisplay 
             key={`education-${index}`}
             education={education} 
-            index={index}
+            index={education._id}
           />
         ))}
 
@@ -170,46 +255,84 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
                 {editingIndex !== null ? 'Edit Education' : 'Add Education'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSaveEducation} className="space-y-4 mt-4">
-              <FormField label="School">
-                <Input
-                  value={formData.school || ''}
-                  onChange={handleInputChange('school')}
-                  required
+            <form onSubmit={handleSubmit(handleSaveEducation)} className="space-y-4 mt-4">
+              <FormField 
+                label="School" 
+                error={errors.school?.message}
+              >
+                <Controller
+                  name="school"
+                  control={control}
+                  render={({ field }) => (
+                    <Input {...field} />
+                  )}
                 />
               </FormField>
 
-              <FormField label="Degree">
-                <Input
-                  value={formData.degree || ''}
-                  onChange={handleInputChange('degree')}
-                  required
+              <FormField 
+                label="Degree"
+                error={errors.degree?.message}
+              >
+                <Controller
+                  name="degree"
+                  control={control}
+                  render={({ field }) => (
+                    <Input {...field} />
+                  )}
                 />
               </FormField>
 
               <div className="grid grid-cols-2 gap-4">
-                <FormField label="Start Date">
-                  <DatePickerDemo
-                    value={formData.startDate??null}
-                    onChange={handleDateChange('startDate')}
+                <FormField 
+                  label="Start Date"
+                  error={errors.startDate?.message}
+                >
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePickerDemo 
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    )}
                   />
                 </FormField>
 
-                <FormField label="End Date">
-                  <DatePickerDemo
-                    value={formData.endDate??null}
-                    onChange={handleDateChange('endDate')}
+                <FormField 
+                  label="End Date"
+                  error={errors.endDate?.message}
+                >
+                  <Controller
+                    name="endDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePickerDemo 
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    )}
                   />
                 </FormField>
               </div>
 
-              <FormField label="Skills">
-                <Textarea
-                  value={formData.skills?.join(', ') || ''}
-                  onChange={handleInputChange('skills')}
-                  placeholder="Separate skills with commas"
-                  className="resize-none"
-                  rows={3}
+              <FormField 
+                label="Skills"
+                error={errors.skills?.message}
+              >
+                <Controller
+                  name="skills"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Textarea
+                      value={value||''}
+                      onChange={(e) => onChange(e.target.value)} // Allow typing normally
+                      onBlur={handleSkillsChange}
+                      placeholder="Separate skills with commas"
+                      className="resize-none"
+                      rows={3}
+                    />
+                  )}
                 />
               </FormField>
 
@@ -217,7 +340,10 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={() => {
+                    setIsDialogOpen(false);
+                    reset();
+                  }}
                 >
                   Cancel
                 </Button>
