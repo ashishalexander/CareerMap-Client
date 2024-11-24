@@ -130,7 +130,6 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
   );
 
   const handleDeleteExperience = async (id: string) => {
-    console.log(id+'🤣')
     if (!user?._id) return;
     try {
       const response = await api.delete(`/api/users/delete/profile-experience/${user._id}/${id}`);
