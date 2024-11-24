@@ -14,6 +14,7 @@ import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
 import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
+import { current } from '@reduxjs/toolkit';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -159,7 +160,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
 
        {/* Experience Section */}
        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <ExperienceProfileComponent isOwnProfile={isOwnProfile} />
+        <ExperienceProfileComponent isOwnProfile={isOwnProfile} experiences={currentUser.profile.Experience} />
       </div>
 
        {/* Project Section */}

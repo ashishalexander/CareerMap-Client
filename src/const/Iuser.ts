@@ -33,6 +33,7 @@ export interface Iuser {
             endDate: Date,
             location: string,
             description: string,
+            _id:string
         }]
         Projects?:[{
             title?: string;

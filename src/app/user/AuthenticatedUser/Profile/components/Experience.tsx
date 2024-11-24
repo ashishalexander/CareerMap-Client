@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {useAppDispatch,useAppSelector,RootState,} from "../../../../store/store";
+import { useAppDispatch, useAppSelector, RootState } from "../../../../store/store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,35 +12,55 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PencilIcon, PlusCircle } from "lucide-react";
+import { PencilIcon, PlusCircle, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import api from "@/app/lib/axios-config";
+import { updateUserProfileExperience } from "@/app/store/slices/authSlice";
 
+// Define the base experience interface
 export interface IExperience {
-  title?: string;
-  employmentType?: string;
-  company?: string;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  location?: string;
-  description?: string;
+  title: string;
+  employmentType: string;
+  company: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  location: string;
+  description: string;
 }
 
+// Extended interface for experience with ID
+interface ExperienceWithId extends IExperience {
+  _id: string;
+}
+
+// Props interface for the main component
 interface ExperienceProfileComponentProps {
+  isOwnProfile: boolean;
+  experiences?: ExperienceWithId[];
+}
+
+// Props interface for the display subcomponent
+interface ExperienceDisplayProps {
+  index: string;
+  expobj: ExperienceWithId;
+  onEdit: (index: string, experience: ExperienceWithId) => void;
+  onDelete: (id: string) => void;
   isOwnProfile: boolean;
 }
 
 const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
   isOwnProfile,
+  experiences = []
 }) => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state: RootState) => state.auth);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<string | null>(null);
   const [formData, setFormData] = useState<IExperience>({
     title: "",
     employmentType: "",
@@ -50,6 +70,7 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
     location: "",
     description: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "";
@@ -59,14 +80,36 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
     });
   };
 
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.title?.trim()) errors.title = "Title is required";
+    if (!formData.company?.trim()) errors.company = "Company is required";
+    if (!formData.employmentType) errors.employmentType = "Employment type is required";
+    if (!formData.startDate) errors.startDate = "Start date is required";
+    if (formData.endDate && formData.startDate && formData.endDate < formData.startDate)
+      errors.endDate = "End date must be after start date";
+    if (formData.description?.trim() && formData.description.length > 500)
+      errors.description = "Description must be less than 500 characters";
+    if (!formData.location?.trim()) errors.location = "Location is required";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSaveExperience = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      if (!validateForm() || !user?._id) return;
+      
       try {
         if (editingIndex !== null) {
-          // await dispatch(updateExperience({ index: editingIndex, updatedData: formData }));
+          const response = await api.put(`/api/users/profile/experience/${user._id}/${editingIndex}`,  formData );
+          dispatch(updateUserProfileExperience(response.data))
+
         } else {
-          // await dispatch(createExperience(formData));
+          console.log(formData)
+          const response = await api.post(`/api/users/profile/experience/${user._id}`,  formData );
+          dispatch(updateUserProfileExperience(response.data))
         }
         setIsDialogOpen(false);
         setEditingIndex(null);
@@ -83,13 +126,31 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
         console.error("Failed to save experience:", error);
       }
     },
-    [editingIndex, formData, dispatch]
+    [editingIndex, formData, user?._id]
   );
 
+  const handleDeleteExperience = async (id: string) => {
+    console.log(id+'🤣')
+    if (!user?._id) return;
+    try {
+      const response = await api.delete(`/api/users/delete/profile-experience/${user._id}/${id}`);
+      dispatch(updateUserProfileExperience(response.data))
+
+      // Handle successful deletion (e.g., refresh the experiences list)
+    } catch (error) {
+      console.error("Failed to delete experience:", error);
+    }
+  };
+
   const handleStartEdit = useCallback(
-    (index: number, experience: IExperience) => {
+    (index: string, experience: ExperienceWithId) => {
       setEditingIndex(index);
-      setFormData(experience);
+      setFormData({
+        ...experience,
+        startDate: experience.startDate ? new Date(experience.startDate) : null,
+        endDate: experience.endDate ? new Date(experience.endDate) : null,
+      });
+      setFormErrors({});
       setIsDialogOpen(true);
     },
     []
@@ -106,6 +167,7 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
       location: "",
       description: "",
     });
+    setFormErrors({});
     setIsDialogOpen(true);
   }, []);
 
@@ -138,44 +200,58 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
     }));
   }, []);
 
-  const FormField = useCallback(
-    ({ label, children }: { label: string; children: React.ReactNode }) => (
+  const FormField: React.FC<{
+    label: string;
+    children: React.ReactNode;
+    error?: string;
+  }> = useCallback(
+    ({ label, children, error }) => (
       <div className="space-y-2">
         <Label>{label}</Label>
         {children}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     ),
     []
   );
 
-  const ExperienceDisplay = useCallback(
-    ({ experience, index }: { experience: IExperience; index: number }) => (
+  const ExperienceDisplay: React.FC<ExperienceDisplayProps> = useCallback(
+    ({ expobj, index, onEdit, onDelete, isOwnProfile }) => (
       <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
         <div className="flex justify-between items-start">
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg">{experience.title}</h3>
-            <p className="text-gray-600">{experience.company}</p>
+            <h3 className="font-semibold text-lg">{expobj.title}</h3>
+            <p className="text-gray-600">{expobj.company}</p>
             <p className="text-sm text-gray-500">
-              {formatDate(experience.startDate)} -{" "}
-              {formatDate(experience.endDate)}
+              {formatDate(expobj.startDate)} - {formatDate(expobj.endDate)}
             </p>
-            <p className="text-sm text-gray-500">{experience.location}</p>
-            <p className="text-sm text-gray-600">{experience.description}</p>
+            <p className="text-sm text-gray-500">{expobj.location}</p>
+            <p className="text-sm text-gray-600">{expobj.description}</p>
           </div>
           {isOwnProfile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleStartEdit(index, experience)}
-              className="hover:bg-gray-100"
-            >
-              <PencilIcon className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onEdit(index, expobj)}
+                className="hover:bg-gray-100"
+              >
+                <PencilIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(expobj._id)}
+                className="hover:bg-gray-100 hover:text-red-500"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
       </div>
     ),
-    [handleStartEdit, isOwnProfile]
+    [formatDate]
   );
 
   return (
@@ -195,87 +271,93 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
         )}
       </CardHeader>
       <CardContent className="space-y-6">
-        {user?.profile?.Experience?.map((experience, index) => (
+        {experiences.map((experience) => (
           <ExperienceDisplay
-            key={`experience-${index}`}
-            experience={experience}
-            index={index}
+            key={experience._id}
+            expobj={experience}
+            index={experience._id}
+            onEdit={handleStartEdit}
+            onDelete={handleDeleteExperience}
+            isOwnProfile={isOwnProfile}
           />
         ))}
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
               <DialogTitle>
                 {editingIndex !== null ? "Edit Experience" : "Add Experience"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSaveExperience} className="space-y-4 mt-4">
-              <FormField label="Title">
-                <Input
-                  value={formData.title || ""}
-                  onChange={handleInputChange("title")}
-                  required
-                />
-              </FormField>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <FormField label="Title" error={formErrors.title}>
+                    <Input
+                      value={formData.title}
+                      onChange={handleInputChange("title")}
+                    />
+                  </FormField>
 
-              <FormField label="Employment Type">
-              <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      {formData.employmentType || 'Select Employment Type'}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    {["Full-Time", "Part-Time", "Contract", "Internship"].map(type => (
-                      <DropdownMenuItem key={type} onClick={() => handleEmploymentTypeChange(type)}>
-                        {type}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </FormField>
+                  <FormField label="Employment Type" error={formErrors.employmentType}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                          {formData.employmentType || 'Select Employment Type'}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        {["Full-Time", "Part-Time", "Contract", "Internship"].map(type => (
+                          <DropdownMenuItem key={type} onClick={() => handleEmploymentTypeChange(type)}>
+                            {type}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </FormField>
 
-              <FormField label="Company">
-                <Input
-                  value={formData.company || ""}
-                  onChange={handleInputChange("company")}
-                  required
-                />
-              </FormField>
+                  <FormField label="Company" error={formErrors.company}>
+                    <Input
+                      value={formData.company}
+                      onChange={handleInputChange("company")}
+                    />
+                  </FormField>
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField label="Start Date">
-                  <DatePickerDemo
-                    value={formData.startDate ?? null}
-                    onChange={handleDateChange("startDate")}
-                  />
-                </FormField>
+                  <FormField label="Location" error={formErrors.location}>
+                    <Input
+                      value={formData.location}
+                      onChange={handleInputChange("location")}
+                    />
+                  </FormField>
+                </div>
 
-                <FormField label="End Date">
-                  <DatePickerDemo
-                    value={formData.endDate ?? null}
-                    onChange={handleDateChange("endDate")}
-                  />
-                </FormField>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Start Date" error={formErrors.startDate}>
+                      <DatePickerDemo
+                        value={formData.startDate}
+                        onChange={handleDateChange("startDate")}
+                      />
+                    </FormField>
+
+                    <FormField label="End Date" error={formErrors.endDate}>
+                      <DatePickerDemo
+                        value={formData.endDate}
+                        onChange={handleDateChange("endDate")}
+                      />
+                    </FormField>
+                  </div>
+
+                  <FormField label="Description" error={formErrors.description}>
+                    <Textarea
+                      value={formData.description}
+                      onChange={handleInputChange("description")}
+                      placeholder="Describe your experience"
+                      className="resize-none h-[150px]"
+                    />
+                  </FormField>
+                </div>
               </div>
-
-              <FormField label="Location">
-                <Input
-                  value={formData.location || ""}
-                  onChange={handleInputChange("location")}
-                />
-              </FormField>
-
-              <FormField label="Description">
-                <Textarea
-                  value={formData.description || ""}
-                  onChange={handleInputChange("description")}
-                  placeholder="Describe your experience"
-                  className="resize-none"
-                  rows={3}
-                />
-              </FormField>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button
