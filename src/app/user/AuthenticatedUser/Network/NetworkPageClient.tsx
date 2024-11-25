@@ -9,8 +9,9 @@ import { ConnectionCard } from './components/ConnectionCard';
 import { PendingRequests } from './components/PendingRequests';
 import { NetworkFilters } from './components/NetworkFilters';
 import { LoadingSpinner } from './components/LoadingSpinner';
-
 import { User, ConnectionRequest } from './types/network';
+import { useAppDispatch, useAppSelector, RootState } from "../../../store/store";
+
 
 interface SuggestionsResponse {
   data: User[];
@@ -22,7 +23,8 @@ export default function NetworkPageClient() {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { ref, inView } = useInView();
   const queryClient = useQueryClient();
-
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
   // Fetch suggestions
   const {
     data: suggestionsData,
@@ -43,7 +45,7 @@ export default function NetworkPageClient() {
   const { data: requestsData } = useInfiniteQuery<ApiResponse<ConnectionRequest[]>, Error>({
     queryKey: ['requests'],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.get<ApiResponse<ConnectionRequest[]>>('/api/network/pending-requests');
+      const response = await api.get<ApiResponse<ConnectionRequest[]>>(`/api/users/network/pending-requests/${user?._id}`);
       return response;
     },
     getNextPageParam: () => undefined, // Only one page of requests
