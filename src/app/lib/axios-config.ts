@@ -2,7 +2,6 @@
   import {store} from '../store/store'
   import { signOut } from '../store/slices/authSlice';
   import Router from 'next/router'
-  
   interface ApiErrorResponse {
     message: string;
     errors?: Record<string, string[]>;
