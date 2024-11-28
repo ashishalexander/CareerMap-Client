@@ -113,6 +113,16 @@ const authSlice = createSlice({
       if(state.user){
         state.user = action.payload
       }
+    },
+    updateUserProfileExperience:(state,action:PayloadAction<Iuser>)=>{
+      if(state.user){
+        state.user=action.payload
+      }
+    },
+    updateSubscription:(state,action:PayloadAction<Iuser>)=>{
+      if(state.user){
+        state.user=action.payload
+      }
     }
   },
   extraReducers: (builder) => {
@@ -147,5 +157,5 @@ const authSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { signOut,updateUserBannerUrl,updateUserProfilePicture,updateUserProfileInfo,updateUserProfileAbout,updateUserProfileEducation } = authSlice.actions;
+export const { signOut,updateUserBannerUrl,updateUserProfilePicture,updateUserProfileInfo,updateUserProfileAbout,updateUserProfileEducation,updateUserProfileExperience,updateSubscription } = authSlice.actions;
 export default authSlice.reducer;

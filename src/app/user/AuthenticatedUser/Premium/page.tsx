@@ -1,9 +1,18 @@
 "use client"
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Video, Briefcase, Check, Star } from 'lucide-react';
+import api from '../../../lib/axios-config'
+import { useAppDispatch, useAppSelector, RootState } from "../../../store/store";
+import Razorpay from 'razorpay';
+import { toast } from 'sonner';
+import { updateSubscription } from '@/app/store/slices/authSlice';
+import { useRouter } from 'next/navigation';
+
+
+
 
 interface PremiumFeature {
   icon: React.ReactNode;
@@ -22,6 +31,22 @@ interface PlanType {
 
 const PremiumPlans: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const router = useRouter()
+
+
+  useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const userFeatures: PremiumFeature[] = [
     {
@@ -56,15 +81,15 @@ const PremiumPlans: React.FC = () => {
 
   const plans: PlanType[] = [
     {
-      id: 'user-premium',
-      title: 'Professional',
+      id: 'Professional',
+      title: 'Professional',  
       monthlyPrice: 29.99,
       yearlyPrice: 299.99,
       features: userFeatures,
       highlight: true
     },
     {
-      id: 'recruiter-premium',
+      id: 'Recruiter Pro',
       title: 'Recruiter Pro',
       monthlyPrice: 49.99,
       yearlyPrice: 499.99,
@@ -73,9 +98,102 @@ const PremiumPlans: React.FC = () => {
     }
   ];
 
-  const handleSubscribe = (planId: string) => {
-    console.log(`Subscribing to plan: ${planId}`);
-    // Implement subscription logic here
+  const handleSubscribe = async (planId: string) => {
+    // Validate user login
+    if (!user) {
+      toast.error("Please login to proceed with subscription");
+      return;
+    }
+
+    try {
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) {
+        toast.error("Invalid plan selected");
+        return;
+      }
+
+      const amount = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+
+      // Create Razorpay order via backend
+      const response = await api.post(`/api/users/premium/create-order`, {
+        amount,
+        currency: 'INR',
+        planDetails: {
+          planId: plan.id,
+          billingCycle,
+        }
+      });
+      console.log(response)
+
+      const { 
+        id, 
+        currency, 
+        amount: orderAmount 
+      } = response.data;
+
+      // Razorpay checkout options
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+        amount: orderAmount, // Amount in paise
+        currency: currency,
+        name: "Careermap Premium",
+        description: `${plan.title} - ${billingCycle} Subscription`,
+        order_id: id,
+        handler: async (response: any) => {
+          console.log(response)
+          try {
+            // Verify payment on backend
+            const verificationResponse = await api.post('/api/users/premium/verify-payment', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              userId: user._id,
+              planId: plan.id,
+              billingCycle
+            });
+
+            // Handle successful payment
+            if (verificationResponse.data) {
+              toast.success("Subscription activated successfully!");
+              dispatch(updateSubscription(verificationResponse.data));
+              router.push('/user/AuthenticatedUser/Home') 
+
+            } else {
+              toast.error("Payment verification failed");
+            }
+          } catch (verificationError) {
+            console.error("Payment verification error:", verificationError);
+            toast.error("Something went wrong during payment verification");
+          }
+        },
+        prefill: {
+          name: user.firstName || "User", 
+          email: user.email || "",
+          contact: user.mobile || ""
+        },
+        notes: {
+          planId: plan.id,
+          userId: user._id,
+          billingCycle
+        },
+        theme: {
+          color: "#4e73df"
+        },
+        modal: {
+          ondismiss: () => {
+            toast.error("Payment cancelled");
+          }
+        }
+      };
+
+      // Open Razorpay checkout
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
+
+    } catch (error) {
+      console.error("Subscription error:", error);
+      toast.error("Failed to process subscription. Please try again.");
+    }
   };
 
   return (
