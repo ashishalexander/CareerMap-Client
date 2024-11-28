@@ -2,6 +2,11 @@
     "cSpell.words": [
         "accesstoken",
         "datasave",
+<<<<<<< Updated upstream
+=======
+        "expobj",
+        "firstname",
+>>>>>>> Stashed changes
         "Icomment",
         "Ilike",
         "Ipost",
@@ -14,6 +19,7 @@
         "persistor",
         "Recuriter",
         "reposted",
+        "Requser",
         "Signup",
         "tailwindcss",
         "Togle"
