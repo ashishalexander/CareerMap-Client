@@ -11,12 +11,10 @@ import { NetworkFilters } from './components/NetworkFilters';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { User, ConnectionRequest } from './types/network';
 import { useAppDispatch, useAppSelector, RootState } from "../../../store/store";
+import { SuggestionsResponse } from './types/network';
+import { FetchRequestResponse } from './types/network';
 
 
-interface SuggestionsResponse {
-  data: User[];
-  nextPage: number | null;
-}
 
 export default function NetworkPageClient() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,7 +32,7 @@ export default function NetworkPageClient() {
   } = useInfiniteQuery<SuggestionsResponse, Error>({
     queryKey: ['suggestions', debouncedSearch],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.get<ApiResponse<SuggestionsResponse>>(`/api/network/suggestions?page=${pageParam}&search=${debouncedSearch}`);
+      const response = await api.get<ApiResponse<SuggestionsResponse>>(`/api/users/network/suggestions/${user?._id}/?page=${pageParam}&search=${debouncedSearch}`);
       return response.data;
     },
     getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
@@ -42,11 +40,11 @@ export default function NetworkPageClient() {
   });
 
   // Fetch requests
-  const { data: requestsData } = useInfiniteQuery<ApiResponse<ConnectionRequest[]>, Error>({
+  const { data: requestsData } = useInfiniteQuery<FetchRequestResponse, Error>({
     queryKey: ['requests'],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.get<ApiResponse<ConnectionRequest[]>>(`/api/users/network/pending-requests/${user?._id}`);
-      return response;
+      const response = await api.get<ApiResponse<FetchRequestResponse>>(`/api/users/network/pending-requests/${user?._id}`);
+      return response.data;
     },
     getNextPageParam: () => undefined, // Only one page of requests
     initialPageParam: 1,
@@ -54,7 +52,7 @@ export default function NetworkPageClient() {
 
   // Connect mutation
   const connectMutation = useMutation({
-    mutationFn: (userId: string) => api.post<ApiResponse<void>>('/api/network/connect', { userId }),
+    mutationFn: (RequserId: string) => api.post<ApiResponse<void>>(`/api/users/network/connect/${user?._id}`, { RequserId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suggestions'] });
     },
@@ -63,7 +61,7 @@ export default function NetworkPageClient() {
   // Handle request mutation
   const requestMutation = useMutation({
     mutationFn: ({ requestId, action }: { requestId: string; action: 'accept' | 'reject' }) =>
-      api.post<ApiResponse<void>>('/api/network/handle-request', { requestId, action }),
+      api.post<ApiResponse<void>>(`/api/users/network/handle-request/${user?._id}`, { requestId, action }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] });
     },
@@ -75,15 +73,16 @@ export default function NetworkPageClient() {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  // const requests = requestsData?.pages[0]?.data ?? [];
+  const requests = requestsData?.pages[0]?.requests ?? [];  console.log('requests:', requests)
 
-  const suggestions = suggestionsData?.pages.flatMap(page => page.data) ?? [];
-  const requests = requestsData?.pages[0]?.data ?? [];
 
+
+  console.log("requestsData:",requestsData)
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* <h1 className="text-3xl font-bold mb-6">Your Network</h1> */}
 
-      <NetworkFilters
+      <NetworkFilters 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onFilterChange={() => {}} // Implement filter logic
@@ -98,14 +97,16 @@ export default function NetworkPageClient() {
       <div>
         <h2 className="text-xl font-semibold mb-4">People You May Know</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {suggestions.map((user) => (
+        {suggestionsData?.pages.map((page) =>
+          page.suggestions.map((suggestion) => (
             <ConnectionCard
-              key={user.id}
-              user={user}
-              onConnect={() => connectMutation.mutate(user.id)}
+              key={suggestion._id}
+              user={suggestion}
+              onConnect={(parameter) => connectMutation.mutate(parameter || '')}
               onIgnore={() => {}} // Implement ignore logic
             />
-          ))}
+          ))
+        )}
         </div>
 
         <div ref={ref} className="h-10 mt-4">
