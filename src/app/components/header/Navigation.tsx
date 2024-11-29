@@ -27,8 +27,8 @@ const NavItem = ({ icon: Icon, text, href, isActive }: NavItemProps) => (
     const pathname = usePathname();
     
     const navItems = [
-      { icon: Home, text: 'Home', href: '/feed' },
-      { icon: Users, text: 'Network', href: '/network' },
+      { icon: Home, text: 'Home', href: '/user/AuthenticatedUser/Home' },
+      { icon: Users, text: 'Network', href: '/user/AuthenticatedUser/Network' },
       { icon: Briefcase, text: 'Jobs', href: '/jobs' },
       { icon: MessageSquare, text: 'Messages', href: '/messages' },
       { icon: Bell, text: 'Notifications', href: '/notifications' }
