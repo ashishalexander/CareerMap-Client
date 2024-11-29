@@ -38,7 +38,7 @@ export const CreatePost: React.FC<{ onPostCreate: (post: Ipost) => void }> = ({ 
       content: articleContent,
       media: previewUrl || '',
       type: 'article',
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
     onPostCreate(newPost);
     setArticleContent('');
@@ -68,7 +68,7 @@ export const CreatePost: React.FC<{ onPostCreate: (post: Ipost) => void }> = ({ 
       <Card className="mb-4">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <img src="/api/placeholder/40/40" alt="User avatar" className="rounded-full" />
+            <img src="https://placehold.jp/40x40.png" alt="User avatar" className="rounded-full" />
             <Dialog open={isArticleDialogOpen} onOpenChange={setIsArticleDialogOpen}>
               <DialogTrigger asChild>
                 <button className="w-full text-left rounded-full border px-4 py-2 text-gray-500 hover:bg-gray-100">
