@@ -22,7 +22,8 @@ export interface Iuser {
             degree: string;
             startDate: Date;
             endDate: Date;
-            skills:[string]
+            skills:[string];
+            _id:string
         }]
         Experience?:[{
             title: string,
@@ -32,6 +33,7 @@ export interface Iuser {
             endDate: Date,
             location: string,
             description: string,
+            _id:string
         }]
         Projects?:[{
             title?: string;

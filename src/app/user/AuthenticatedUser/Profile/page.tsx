@@ -7,13 +7,14 @@ import { ProfileInfo } from './components/ProfileInfo';
 import { ProfileActions } from './components/ProfileActions';
 import { AboutSection } from './components/AboutSession';
 import { ProfileSkeleton } from './components/ProfileLoadSkelt';
-import { updateProfile, fetchUserProfile } from '../../../store/slices/profileSlice'; // Updated import to profileSlice
 import type { RootState } from '../../../store/store';
 import type { Iuser } from '../../../../const/Iuser';
 import EducationProfileComponent from './components/Education'
 import ExperienceProfileComponent from './components/Experience';
 import ProjectProfileComponent from './components/Project'
-
+import api from '../../../lib/axios-config'
+import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
+import { current } from '@reduxjs/toolkit';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -22,33 +23,77 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
   const dispatch = useAppDispatch(); // Use custom useAppDispatch hook
   const currentUser = useAppSelector((state: RootState) => state.auth.user); // Accessing profile from profileSlice
   console.log(JSON.stringify(currentUser))
-  const loading = useAppSelector((state: RootState) => state.profile.loading); // Access loading state from profileSlice
   
   const isOwnProfile: boolean = userId === null || (currentUser !== null && userId === currentUser._id);
   console.log(isOwnProfile+'🤷‍♂️')
 
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
-      await dispatch(updateProfile(updateData)).unwrap(); // Update profile using thunk
+      console.log(JSON.stringify(updateData))
+      const response = await api.post(`/api/users/profile/info/${currentUser?._id}`,updateData)
+      if(response&&response.data){
+        dispatch(updateUserProfileInfo(response.data)); // Update profile using thunk
+
+      }
     } catch (error) {
       console.error('Failed to update profile:', error);
       // Handle error (show toast notification, etc.)
     }
   };
 
-  const handleBannerUpdate = async (file: File) => {
+  const handleProfileAbout = async (aboutData: string) => { // Changed to `string`
     try {
-      // const uploadedUrl = await uploadImage(file);
-      // await handleProfileUpdate({ bannerImage: uploadedUrl });
+      const response = await api.post(`/api/users/profile/about/${currentUser?._id}`, { about: aboutData });
+      console.log(response.data);
+      dispatch(updateUserProfileAbout(response.data))
+    } catch (error) {
+      console.error('Failed to update profile about section:', error);
+      // Error handling here
+    }
+  };
+
+  const handleBannerUpdate = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file',file)
+    try {
+          const response = await api.post(`/api/users/upload-profile-banner/${currentUser?._id}`,formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            }
+          )
+      const imageUrl = response.data
+      dispatch(updateUserBannerUrl(imageUrl))
     } catch (error) {
       console.error('Failed to update banner:', error);
     }
   };
 
+  const handleAvatarUpdate = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await api.post(
+        `/api/users/upload-profile-avatar/${currentUser?._id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      const imageUrl = response.data;
+      dispatch(updateUserProfilePicture(imageUrl));
+    } catch (error) {
+      console.error('Failed to update profile picture:', error);
+    }
+  };
+
   
-  if (loading) {
-    return <ProfileSkeleton />;
-  }
+  // if (loading) {
+  //   return <ProfileSkeleton />;
+  // }
 
   if (!currentUser) {
     return (
@@ -65,18 +110,14 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
           <ProfileBanner 
             bannerUrl={currentUser.profile?.bannerImage}
             isOwnProfile={isOwnProfile}
-            onBannerUpdate={(file) => {
-              // Implement file upload logic and call handleProfileUpdate
-                // handleBannerUpdate({profile:{ bannerImage: file }}); // Example call
+            onBannerUpdate={(file:File) => {
+                 handleBannerUpdate(file ); 
             }}
           />
           <ProfileAvatar 
             image={currentUser.profile?.profilePicture}
             isOwnProfile={isOwnProfile}
-            onAvatarUpdate={(file) => {
-              // Implement file upload logic and call handleProfileUpdate
-              //  handleBannerUpdate({profile:{ profilePicture: file }}); // Example call
-            }}
+            onAvatarUpdate={handleAvatarUpdate}
           />
         </div>
 
@@ -109,17 +150,17 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
        <AboutSection 
             about={currentUser.profile?.about}
             isOwnProfile={isOwnProfile}
-            onUpdate={(about) => handleProfileUpdate({profile:{ about }})} // Update about section
+            onUpdate={(about) => handleProfileAbout(about)} // Update about section
           />      </div>
 
       {/* Education Section */}
       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <EducationProfileComponent isOwnProfile={isOwnProfile} />
+        <EducationProfileComponent isOwnProfile={isOwnProfile} educations={currentUser.profile.Education} />
       </div>
 
        {/* Experience Section */}
        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <ExperienceProfileComponent isOwnProfile={isOwnProfile} />
+        <ExperienceProfileComponent isOwnProfile={isOwnProfile} experiences={currentUser.profile.Experience} />
       </div>
 
        {/* Project Section */}

@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
+import { useState,useRef } from 'react';
 interface ProfileBannerProps {
   bannerUrl?: string | null;
   isOwnProfile: boolean;
@@ -18,13 +18,16 @@ export const ProfileBanner: FC<ProfileBannerProps> = ({
   onBannerUpdate,
   onBannerRemove
 }) => {
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && onBannerUpdate) {
-      onBannerUpdate(file);
-    }
-  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+
+
+const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0] || null;
+  if (file && onBannerUpdate) {
+    onBannerUpdate(file);
+  }
+};
   if (isUploading) {
     return (
       <Skeleton className="w-full h-60 rounded-t-lg" />
@@ -45,24 +48,24 @@ export const ProfileBanner: FC<ProfileBannerProps> = ({
 
       {isOwnProfile && (
         <div className="absolute top-4 right-4 flex gap-2">
-          <label>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              className="bg-white/90 hover:bg-white "
+              disabled={isUploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              {bannerUrl ? 'Change Banner' : 'Add Banner'}
+            </Button>
             <input
+              ref={fileInputRef}
               type="file"
               className="hidden"
               accept="image/*"
               onChange={handleFileChange}
               disabled={isUploading}
             />
-            <Button 
-              variant="secondary" 
-              size="sm"
-              className="bg-white/90 hover:bg-white"
-              disabled={isUploading}
-            >
-              <Camera className="h-4 w-4 mr-2" />
-              {bannerUrl ? 'Change Banner' : 'Add Banner'}
-            </Button>
-          </label>
 
           {bannerUrl && onBannerRemove && (
             <Button
@@ -79,10 +82,6 @@ export const ProfileBanner: FC<ProfileBannerProps> = ({
         </div>
       )}
 
-      {/* Optional overlay for hover effect */}
-      {isOwnProfile && (
-        <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-200 rounded-t-lg" />
-      )}
     </div>
   );
 };

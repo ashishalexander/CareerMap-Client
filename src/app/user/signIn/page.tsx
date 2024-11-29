@@ -27,11 +27,13 @@ const SignIn: React.FC = () => {
   };
 
   useEffect(()=>{
+
     const accessToken = sessionStorage.getItem('accessToken')
     if(user&&accessToken){
       router.push('/user/AuthenticatedUser/Home')
     }
   },[user])
+
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">

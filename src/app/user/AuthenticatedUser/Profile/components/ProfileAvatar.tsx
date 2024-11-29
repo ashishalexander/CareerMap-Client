@@ -29,21 +29,25 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
           className="w-32 h-32 rounded-full border-4 border-white bg-white object-cover"
         />
         {isOwnProfile && (
-          <label>
-            <input
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              className="absolute bottom-0 right-0 rounded-full bg-white hover:bg-gray-100"
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-          </label>
+            <div className="absolute bottom-0 right-0">
+              <input
+                type="file"
+                id="avatar-upload"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <Button 
+                variant="secondary" 
+                size="sm"
+                className="rounded-full bg-white hover:bg-gray-100"
+                onClick={() => {
+                  document.getElementById('avatar-upload')?.click();
+                }}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+          </div>
         )}
       </div>
     </div>
