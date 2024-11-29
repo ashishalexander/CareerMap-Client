@@ -3,17 +3,18 @@ import React, { useState,useEffect} from "react";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { getSession, signIn,signOut,useSession } from 'next-auth/react';
 import { useRouter } from "next/navigation";
-import { useDispatch, UseDispatch,useSelector } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import { emailSignIn,googleSignIn } from "@/app/store/slices/authSlice";
 import { useAppDispatch,useAppSelector } from "@/app/store/store";
 
 
 const SignIn: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const dispatch = useAppDispatch()
+  const selector = useAppSelector
   const router = useRouter()
-  const {loading,error,user} = useSelector((state:any)=>state.auth)
+  const {loading,error,user} = selector((state:any)=>state.auth)
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
@@ -26,11 +27,13 @@ const SignIn: React.FC = () => {
   };
 
   useEffect(()=>{
-    console.log(user)
-    if(user){
+
+    const accessToken = sessionStorage.getItem('accessToken')
+    if(user&&accessToken){
       router.push('/user/AuthenticatedUser/Home')
     }
-  },[user,router])
+  },[user])
+
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">

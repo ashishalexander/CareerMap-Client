@@ -36,7 +36,8 @@ export const emailSignIn = createAsyncThunk(
         password,
       },{withCredentials:true});  
       const {accessToken,user} = response.data.data
-      sessionStorage.setItem('accessToken',accessToken)
+
+      sessionStorage.setItem('accessToken', accessToken);
       return {accessToken,user}
     } catch (error:any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to sign in');
