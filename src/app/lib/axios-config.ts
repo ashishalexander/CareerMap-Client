@@ -1,7 +1,8 @@
   import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
   import {store} from '../store/store'
   import { signOut } from '../store/slices/authSlice';
-  import Router from 'next/router'
+  // import Router from 'next/router'
+
   interface ApiErrorResponse {
     message: string;
     errors?: Record<string, string[]>;
@@ -13,7 +14,7 @@
     constructor(
       public status: number,
       public message: string,
-      public data?: ApiErrorResponse
+      public data?: ApiErrorResponse,
     ) {
       super(message);
       this.name = 'ApiError';
@@ -60,7 +61,14 @@
     }
   };
 
-
+  const redirectToUnauthorizedPage = async () => {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/Unauthorized'
+    } else {
+      console.error('Router.push() cannot be used on the server side');
+    }
+  };
+  
   apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError<ApiErrorResponse>) => {
@@ -71,7 +79,7 @@
         const message = errorResponse?.message || 'An error occurred';
   
         switch (status) {
-          case 401:
+          case 401: //No Token
             logout();
             return Promise.reject(new ApiError(status, 'Access token is missing. Please log in again.'));
           case 403: // Invalid token
@@ -96,6 +104,9 @@
               logout();
               return Promise.reject(new ApiError(0, 'Session expired. Please log in again.', refreshError));
             }
+          case 498:
+            await redirectToUnauthorizedPage();
+            return Promise.reject(new ApiError(status, 'Unauthorized access', errorResponse));
           case 404:
           case 500:
             return Promise.reject(new ApiError(status, message, errorResponse));
@@ -110,7 +121,8 @@
   const logout = async()=>{
     store.dispatch(signOut());
     if (typeof window !== 'undefined') {
-      await Router.push('/user/signIn');
+      // await Router.push('/user/signIn');
+      window.location.href = '/user/signIn'
     } else {
       console.error('Router.push() cannot be used on the server side');
     }
