@@ -86,6 +86,9 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    resetError(state){
+      state.error=null
+    },
     signOut(state) {
       state.user = null;
       state.accessToken=null;
@@ -158,5 +161,5 @@ const authSlice = createSlice({
 });
 
 // Export actions and reducer
-export const { signOut,updateUserBannerUrl,updateUserProfilePicture,updateUserProfileInfo,updateUserProfileAbout,updateUserProfileEducation,updateUserProfileExperience,updateSubscription } = authSlice.actions;
+export const { resetError ,signOut,updateUserBannerUrl,updateUserProfilePicture,updateUserProfileInfo,updateUserProfileAbout,updateUserProfileEducation,updateUserProfileExperience,updateSubscription } = authSlice.actions;
 export default authSlice.reducer;

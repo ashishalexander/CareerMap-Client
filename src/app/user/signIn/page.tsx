@@ -4,7 +4,7 @@ import { Mail, Lock, ArrowRight } from "lucide-react";
 import { getSession, signIn,signOut,useSession } from 'next-auth/react';
 import { useRouter } from "next/navigation";
 import { useDispatch,useSelector } from "react-redux";
-import { emailSignIn,googleSignIn } from "@/app/store/slices/authSlice";
+import { emailSignIn,googleSignIn, resetError } from "@/app/store/slices/authSlice";
 import { useAppDispatch,useAppSelector } from "@/app/store/store";
 
 
@@ -34,6 +34,14 @@ const SignIn: React.FC = () => {
     }
   },[user])
 
+  useEffect(()=>{
+    if(error){
+      const timer = setTimeout(()=>{
+        dispatch(resetError())
+      },4000)
+      return ()=>clearTimeout(timer)
+    }
+  },[error,dispatch])
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
