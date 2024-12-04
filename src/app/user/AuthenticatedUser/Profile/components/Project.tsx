@@ -175,28 +175,37 @@ const ProjectProfileComponent: React.FC<ProjectProfileComponentProps> = ({ isOwn
         ))}
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[650px] w-full p-6">
             <DialogHeader>
               <DialogTitle>
                 {editingIndex !== null ? 'Edit Project' : 'Add Project'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSaveProject} className="space-y-4 mt-4">
-              <FormField label="Title">
-                <Input
-                  value={formData.title || ''}
-                  onChange={handleInputChange('title')}
-                  required
-                />
-              </FormField>
+            <form onSubmit={handleSaveProject} className="space-y-6 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField label="Title">
+                  <Input
+                    value={formData.title || ''}
+                    onChange={handleInputChange('title')}
+                    className="w-full"
+                  />
+                </FormField>
+
+                <FormField label="Project URL">
+                  <Input
+                    value={formData.url || ''}
+                    onChange={handleInputChange('url')}
+                    className="w-full"
+                  />
+                </FormField>
+              </div>
 
               <FormField label="Description">
                 <Textarea
                   value={formData.description || ''}
                   onChange={handleInputChange('description')}
-                  required
-                  className="resize-none"
-                  rows={3}
+                  className="resize-none w-full"
+                  rows={4}
                 />
               </FormField>
 
@@ -216,20 +225,13 @@ const ProjectProfileComponent: React.FC<ProjectProfileComponentProps> = ({ isOwn
                 </FormField>
               </div>
 
-              <FormField label="Project URL">
-                <Input
-                  value={formData.url || ''}
-                  onChange={handleInputChange('url')}
-                />
-              </FormField>
-
               <FormField label="Skills">
                 <Textarea
                   value={formData.skills?.join(', ') || ''}
                   onChange={handleInputChange('skills')}
                   placeholder="Separate skills with commas"
-                  className="resize-none"
-                  rows={3}
+                  className="resize-none w-full"
+                  rows={4}
                 />
               </FormField>
 

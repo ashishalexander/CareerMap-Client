@@ -129,9 +129,13 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
         skills: data.skills,
       };
       console.log(Education)
-
-      const response = await api.post(`/api/users/profile/education/${user?._id}`,{Education})
-      dispatch(updateUserProfileEducation(response.data))
+      if(editingIndex){
+        const  response = await api.put(`/api/users/profile/education-update/${editingIndex}/${user?._id}`,{Education})
+        dispatch(updateUserProfileEducation(response.data))
+      }else{
+        const response = await api.post(`/api/users/profile/education/${user?._id}`,{Education})
+        dispatch(updateUserProfileEducation(response.data))
+      }
       setIsDialogOpen(false);
       setEditingIndex(null);
       reset();
@@ -326,7 +330,7 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
                   render={({ field: { value, onChange } }) => (
                     <Textarea
                       value={value||''}
-                      onChange={(e) => onChange(e.target.value)} // Allow typing normally
+                      onChange={(e) => onChange(e.target.value)} 
                       onBlur={handleSkillsChange}
                       placeholder="Separate skills with commas"
                       className="resize-none"
