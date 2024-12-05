@@ -1,20 +1,15 @@
 import { Iuser } from "./Iuser";
 
-export interface Ipost {
-  id: string;
-  author: Iuser;
-  content: string;
-  mediaUrls?:  {
-    type: 'image' | 'video';
-    url: string;
-  }[];
-  likes: Ilike[];
-  comments: Icomment[];
-  shares: Ishare[];
-  repostedFrom?: Ipost;
+export interface IpostCreate {
+  author: string;
+  text?:string;
+  media?: {
+    type: 'image'; 
+    file:File;   
+    description?: string; 
+  };
   createdAt: Date;
-  updatedAt?: Date;
-  isPinned?: boolean;
+
 }
 
 export interface Icomment {
@@ -22,7 +17,6 @@ export interface Icomment {
   userId: string;
   content: string;
   createdAt: Date;
-  replies?: Icomment[]; // Nested comments if supporting threaded replies
 }
 
 export interface Ilike {
@@ -30,7 +24,3 @@ export interface Ilike {
   likedAt: Date;
 }
 
-export interface Ishare {
-  userId: string;
-  sharedAt: Date;
-}
