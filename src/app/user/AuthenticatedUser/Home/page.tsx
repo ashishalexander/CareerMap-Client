@@ -56,7 +56,7 @@ const HomePage: React.FC<{ user: Iuser; posts: Ipost[] }> = ({  posts=[samplePos
               <UserProfile user={user} />
             </div>
           ) : (
-            <div className="col-span-1">
+            <div className="col-span-1"> 
               <p>Loading user data...</p>
             </div>
           )}
