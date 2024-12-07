@@ -31,17 +31,13 @@ export const CreatePost: React.FC = () => {
 
   // Get current user's ID from Redux store
   const userId = useAppSelector((state) => state.auth.user?._id);
-
+  const user = useAppSelector((state)=>state.auth.user)
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Reset previous validation errors
       setValidationErrors([]);
-      
-      // Validate file type and size
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       const maxSize = 10 * 1024 * 1024; // 10MB
-
       const errors: string[] = [];
       if (!allowedTypes.includes(file.type)) {
         errors.push('Invalid file type. Only JPEG, PNG, and GIF are allowed.');
@@ -49,12 +45,10 @@ export const CreatePost: React.FC = () => {
       if (file.size > maxSize) {
         errors.push('File size exceeds 10MB limit.');
       }
-
       if (errors.length > 0) {
         setValidationErrors(errors);
         return;
       }
-
       setSelectedFile(file);
     }
   };
@@ -64,20 +58,16 @@ export const CreatePost: React.FC = () => {
     setMediaDescription('');
     setValidationErrors([]);
     
-    // Reset the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''; // Clear the file input
     }
   };
 
   const handleArticleSubmit = () => {
-    // Check if user is authenticated
     if (!userId) {
       setValidationErrors(['User must be logged in to create a post']);
       return;
     }
-
-    // Prepare post data for validation
     const postData = {
       text: articleText.trim() || undefined,
       media: selectedFile 
@@ -136,7 +126,7 @@ export const CreatePost: React.FC = () => {
       <CardHeader>
         <div className="flex items-center gap-3">
           <img 
-            src="https://placehold.jp/40x40.png" 
+            src={user?.profile?.profilePicture || "https://placehold.jp/40x40.png"} 
             alt="User avatar" 
             className="rounded-full w-10 h-10" 
           />
