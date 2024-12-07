@@ -24,3 +24,26 @@ export interface Ilike {
   likedAt: Date;
 }
 
+interface author{
+  _id:string;
+  firstName:string;
+  lastName:string;
+  profile:{
+    profilePicture:string
+  }
+}
+
+export interface IPost {
+  _id:string;
+  author: author; 
+  text?: string;
+  media?: {
+    type: 'image'; 
+    url: string;
+    description?: string; 
+  }[];
+  likes: Ilike[];
+  comments: Icomment[];
+  createdAt: string; 
+  updatedAt: string; 
+}

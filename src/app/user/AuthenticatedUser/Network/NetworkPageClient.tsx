@@ -74,11 +74,7 @@ export default function NetworkPageClient() {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
   // const requests = requestsData?.pages[0]?.data ?? [];
-  const requests = requestsData?.pages[0]?.requests ?? [];  console.log('requests:', requests)
-
-
-
-  console.log("requestsData:",requestsData)
+  const requests = requestsData?.pages[0]?.requests ?? [];  
   return (
     <div className="max-w-7xl mx-auto p-6">
 
