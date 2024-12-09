@@ -15,6 +15,7 @@ import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
 import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
 import { current } from '@reduxjs/toolkit';
+import ActivityProfileComponent from './components/Activity'
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -151,7 +152,8 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
             about={currentUser.profile?.about}
             isOwnProfile={isOwnProfile}
             onUpdate={(about) => handleProfileAbout(about)} // Update about section
-          />      </div>
+          />      
+        </div>
 
       {/* Education Section */}
       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
@@ -166,6 +168,11 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
        {/* Project Section */}
        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
         <ProjectProfileComponent isOwnProfile={isOwnProfile} />
+      </div>
+
+      {/* Activity Section */}
+      <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+        <ActivityProfileComponent isOwnProfile={isOwnProfile} />
       </div>
     </div>
 
