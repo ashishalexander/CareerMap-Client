@@ -1,5 +1,10 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
+// Extend the AxiosRequestConfig to include `_retry` property
+interface AxiosRequestConfigWithRetry extends InternalAxiosRequestConfig {
+  _retry?: boolean; 
+}
+
 // Define the structure of your API error response
 interface ApiErrorResponse {
   message: string;
@@ -26,7 +31,7 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials:true,
+  withCredentials: true,
 });
 
 // Request interceptor
@@ -43,10 +48,23 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Function to refresh the access token
+async function refreshAccessToken() {
+  try {
+    const refreshToken = sessionStorage.getItem('refreshToken');
+    if (!refreshToken) return null;
+
+    const response = await apiClient.post('/auth/refresh-token', { refreshToken });
+    return response.data.accessToken;
+  } catch (error) {
+    return null;
+  }
+}
+
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiErrorResponse>) => {
+  async (error: AxiosError<ApiErrorResponse>) => {
     if (error.response) {
       const status = error.response.status;
       const errorResponse = error.response.data;
@@ -58,7 +76,38 @@ apiClient.interceptors.response.use(
           localStorage.removeItem('token');
           break;
         case 403:
-          break;
+          try {
+            const originalRequest = error.config as AxiosRequestConfigWithRetry;
+            
+            if (originalRequest) {
+              // Prevent retrying the same request more than once
+              if (originalRequest._retry) {
+                return Promise.reject(error); 
+              }
+              
+              originalRequest._retry = true; // Mark the request as retrying
+              
+              // Attempt to refresh the token
+              const newAccessToken = await refreshAccessToken();
+              if (newAccessToken) {
+                // Set the new token in the request headers
+                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                
+                // Retry the original request with the new token
+                return apiClient(originalRequest);
+              } else {
+                logout();
+                return Promise.reject(new ApiError(0, 'Session expired. Please log in again.'));
+              }
+            } else {
+              // originalRequest is undefined, cannot retry
+              return Promise.reject(new ApiError(0, 'Original request is undefined.'));
+            }
+          } catch (refreshError: any) {
+            // Token refresh failed, log out the user
+            logout();
+            return Promise.reject(new ApiError(0, 'Session expired. Please log in again.', refreshError));
+          }
         case 404:
           break;
         case 500:
@@ -100,3 +149,8 @@ export const api = {
 };
 
 export default api;
+
+function logout() {
+  sessionStorage.removeItem('adminAccessToken');
+  window.location.href = 'admin/signIn'; 
+}
