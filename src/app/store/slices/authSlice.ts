@@ -92,6 +92,7 @@ const authSlice = createSlice({
     signOut(state) {
       state.user = null;
       state.accessToken=null;
+      sessionStorage.removeItem('accessToken')
     },
     updateUserBannerUrl(state,action:PayloadAction<string>){
       if(state.user){ 

@@ -15,22 +15,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RootState } from '@/app/store/store';
-
+import api from '../../lib/axios-config'
 
 export const UserMenu = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.auth.user);
   const router = useRouter()
 
-  const handleSignOut = () => {
-    dispatch(signOut());
-  };
-
   useEffect(() => {
     if (!user) {
       router.push('/user/signIn');
     }
-  }, [user, router]);
+  }, [user,router]);
+
+  
+  const handleSignOut = async () => {
+    try {
+      await api.get('/api/users/logout')
+      dispatch(signOut());
+      router.push('/user/signIn')
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
 
   if (!user) {
     return null; 

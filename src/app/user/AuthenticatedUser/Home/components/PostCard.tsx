@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Heart, Share2, MessageSquare, MoreVertical } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Ilike, IPost } from '@/const/Ipost';
 import api from '../../../../lib/axios-config'
 import { RootState, useAppSelector } from '../../../../store/store'
+import { useRouter } from 'next/navigation';
+import { Iuser } from '@/const/Iuser';
 
 // API Functions
 const fetchPosts = async ({ pageParam = 1, userId }: { pageParam: number, userId: string }) => {
@@ -29,14 +31,21 @@ const likePost = async (postId: string) => {
   return response.data;
 };
 
-export const PostFeed: React.FC = () => {
+export const PostFeed: React.FC<{user:Iuser}> = ({user}) => {
   const queryClient = useQueryClient();
-  const userId = useAppSelector((state: RootState) => state.auth.user?._id);
-  
-  if (!userId) {
-    return null;
-  }
+  // const user = useAppSelector((state: RootState) => state.auth.user);
+  const router = useRouter()
 
+  useEffect(()=>{
+    if(!user){
+      router.push('/user/singIn')
+    }
+  },[user,router])
+
+  let userId = user?._id
+  if (!userId) {
+    return null
+  }
   // Infinite Query for Posts
   const {
     data,
@@ -126,7 +135,7 @@ export const PostFeed: React.FC = () => {
   return (
     <div className="container mx-auto max-w-xl  py-6">
       {posts.map((post) => (
-        <Card key={post.id} className="mb-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
+        <Card key={post._id} className="mb-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             {/* Post Header */}
             <div className="flex justify-between items-center mb-6">
