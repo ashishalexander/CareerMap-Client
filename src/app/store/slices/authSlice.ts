@@ -73,6 +73,7 @@ export const googleSignIn = createAsyncThunk<
         `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
         { user:session.user }
       );
+     
       sessionStorage.setItem('accessToken',response.data.accessToken)
       return response.data;
     } catch (error) {

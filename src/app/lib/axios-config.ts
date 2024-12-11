@@ -107,6 +107,9 @@
           case 498:
             await redirectToUnauthorizedPage();
             return Promise.reject(new ApiError(status, 'Unauthorized access', errorResponse));
+          case 450: // Custom status for blocked users
+            logout()
+            return Promise.reject(new ApiError(status, 'Your account is blocked.', errorResponse));
           case 404:
           case 500:
             return Promise.reject(new ApiError(status, message, errorResponse));
@@ -121,7 +124,6 @@
   const logout = async()=>{
     store.dispatch(signOut());
     if (typeof window !== 'undefined') {
-      // await Router.push('/user/signIn');
       window.location.href = '/user/signIn'
     } else {
       console.error('Router.push() cannot be used on the server side');
