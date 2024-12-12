@@ -1,79 +1,105 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { DataTable } from '../../../components/DataTable/Table'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Iuser } from '@/const/Iuser'
-import api from '../../../lib/axios-config'
-
-interface User {
-  _id: string
-  firstName: string
-  lastName: string
-  email: string
-  role: string
-}
+import { useUserTableData } from './Hooks/useUserTableData'
+import useDebounce from '../../../components/Hooks/useDebounce'
 
 export function UserTable() {
-  const [users, setUsers] = useState<Iuser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState('')
+  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortColumn, setSortColumn] = useState<keyof Iuser | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await api.get<Iuser[]>('/api/admin/fetchUsers')
-        console.log(response.data)
-        const users = response.data.filter((user:Iuser)=>user.role==="user")
-        setUsers(users)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users'
-        setError(errorMessage)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchUsers()
-  }, [])
-  const handleTogle = async (userId: string) => {
-    try {
-      await api.patch(`/api/admin/blockUser/${userId}`);  
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId ? { ...user, isblocked: !user.isblocked } : user
-        )
-      );
-    } catch (err) {
-      console.error("Failed to block user:", err);
-      setError("Failed to block user");
-    }
-  };
+  // Use debounced search term for API calls
+  const debouncedSearchTerm = useDebounce(searchInput, 500)
 
-  if (loading) {
-    return <div>Loading users...</div>;
-  }
+  const { 
+    users, 
+    loading, 
+    error, 
+    totalUsers, 
+    handleTogle 
+  } = useUserTableData({
+    searchTerm: debouncedSearchTerm,
+    pageSize, 
+    currentPage, 
+    sortColumn, 
+    sortDirection
+  })
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      Loading users...
+    </div>
+  )
 
+  // Remove the error display logic
   return (
-    <DataTable
-      data={users}
-      columns={[
-        { label: 'Name', key: 'firstName' },
-        { label: 'Email', key: 'email' },
-        { label: 'Role', key: 'role' },
-      ]}
-      actions={(user) => (
-        <Button
-          variant={ "destructive"}
-          size="sm"
-          style={{ width: '100px',backgroundColor: user.isblocked ? 'green' : 'red', }} 
-          onClick={() => handleTogle(user._id)} 
-        >
-          {user.isblocked ? "Unblock" : "Block"}
-        </Button>
-      )}
-    />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <Input 
+          placeholder="Search users..." 
+          value={searchInput} 
+          onChange={(e) => {
+            setSearchInput(e.target.value)
+            setCurrentPage(1) // Reset to first page on new search
+          }}
+          className="max-w-sm"
+        />
+      </div>
+      
+      <DataTable
+        data={users}
+        columns={[
+          { 
+            label: 'Name', 
+            key: 'firstName',
+            sortable: true
+          },
+          { 
+            label: 'Email', 
+            key: 'email',
+            sortable: true 
+          },
+          { 
+            label: 'Role', 
+            key: 'role',
+            sortable: true 
+          }
+        ]}
+        actions={(user) => (
+          <Button
+            variant="destructive"
+            size="sm"
+            style={{ 
+              width: '100px', 
+              backgroundColor: user.isblocked ? 'green' : 'red' 
+            }} 
+            onClick={() => handleTogle(user._id)}
+          >
+            {user.isblocked ? "Unblock" : "Block"}
+          </Button>
+        )}
+        pagination={{
+          pageSize,
+          currentPage,
+          totalItems: totalUsers,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: setPageSize
+        }}
+        sorting={{
+          sortColumn,
+          sortDirection,
+          onSortChange: (column, direction) => {
+            setSortColumn(column)
+            setSortDirection(direction)
+          }
+        }}
+      />
+    </div>
   )
 }
