@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 
 export const CareerMapLogo = () => (
-  <Link href="/feed" className="flex-shrink-0 flex items-center space-x-2">
+  <Link href="/user/AuthenticatedUser/Home" className="flex-shrink-0 flex items-center space-x-2">
     {/* Map Pin Icon */}
     <svg 
       viewBox="0 0 24 24" 

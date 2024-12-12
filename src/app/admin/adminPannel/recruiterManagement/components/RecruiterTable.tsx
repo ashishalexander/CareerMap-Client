@@ -1,75 +1,104 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { DataTable } from '../../../components/DataTable/Table'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Iuser } from '@/const/Iuser'
-import api from '../../../lib/axios-config'
+import { useRecruiterTableData } from './Hooks/useRecuriterTableData'
+import useDebounce from '../../../components/Hooks/useDebounce'
 
 export function RecruiterTable() {
-  const [recruiters, setRecruiters] = useState<Iuser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState('')
+  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortColumn, setSortColumn] = useState<keyof Iuser | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
-  useEffect(() => {
-    const fetchRecruiters = async () => {
-      try {
-        const response = await api.get<Iuser[]>('/api/admin/fetchUsers')
-        console.log(response.data)
-        const recruiters = response.data.filter((user: Iuser) => user.role === 'recruiter')
-        setRecruiters(recruiters)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch recruiters'
-        setError(errorMessage)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchRecruiters()
-  }, [])
+  // Use debounced search term for API calls
+  const debouncedSearchTerm = useDebounce(searchInput, 500)
 
-  const handleToggle = async (recruiterId: string) => {
-    try {
-      await api.patch(`/api/admin/blockUser/${recruiterId}`)
-      setRecruiters((prevRecruiters) =>
-        prevRecruiters.map((recruiter) =>
-          recruiter._id === recruiterId ? { ...recruiter, isblocked: !recruiter.isblocked } : recruiter
-        )
-      )
-    } catch (err) {
-      console.error('Failed to block recruiter:', err)
-      setError('Failed to block recruiter')
-    }
-  }
+  const { 
+    recruiters, 
+    loading, 
+    error, 
+    totalRecruiters, 
+    handleToggle 
+  } = useRecruiterTableData({
+    searchTerm: debouncedSearchTerm,
+    pageSize, 
+    currentPage, 
+    sortColumn, 
+    sortDirection
+  })
 
-  if (loading) {
-    return <div>Loading recruiters...</div>
-  }
-
-  if (error) {
-    return <div>{error}</div>
-  }
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      Loading recruiters...
+    </div>
+  )
 
   return (
-    <DataTable
-      data={recruiters}
-      columns={[
-        { label: 'Name', key: 'firstName' },
-        { label: 'Email', key: 'email' },
-        { label: 'Role', key: 'role' },
-      ]}
-      actions={(recruiter) => (
-        <Button
-          variant="destructive"
-          size="sm"
-          style={{
-            width: '100px',
-            backgroundColor: recruiter.isblocked ? 'green' : 'red',
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <Input 
+          placeholder="Search recruiters..." 
+          value={searchInput} 
+          onChange={(e) => {
+            setSearchInput(e.target.value)
+            setCurrentPage(1) // Reset to first page on new search
           }}
-          onClick={() => handleToggle(recruiter._id)}
-        >
-          {recruiter.isblocked ? 'Unblock' : 'Block'}
-        </Button>
-      )}
-    />
+          className="max-w-sm"
+        />
+      </div>
+      
+      <DataTable
+        data={recruiters}
+        columns={[
+          { 
+            label: 'Name', 
+            key: 'firstName',
+            sortable: true
+          },
+          { 
+            label: 'Email', 
+            key: 'email',
+            sortable: true 
+          },
+          { 
+            label: 'Role', 
+            key: 'role',
+            sortable: true 
+          }
+        ]}
+        actions={(recruiter) => (
+          <Button
+            variant="destructive"
+            size="sm"
+            style={{ 
+              width: '100px', 
+              backgroundColor: recruiter.isblocked ? 'green' : 'red' 
+            }} 
+            onClick={() => handleToggle(recruiter._id)}
+          >
+            {recruiter.isblocked ? "Unblock" : "Block"}
+          </Button>
+        )}
+        pagination={{
+          pageSize,
+          currentPage,
+          totalItems: totalRecruiters,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: setPageSize
+        }}
+        sorting={{
+          sortColumn,
+          sortDirection,
+          onSortChange: (column, direction) => {
+            setSortColumn(column)
+            setSortDirection(direction)
+          }
+        }}
+      />
+    </div>
   )
 }
