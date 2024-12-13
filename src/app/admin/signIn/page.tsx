@@ -32,17 +32,17 @@ const AdminSignIn: React.FC = () => {
   const { isLoading, error, isAuthenticated } = useSelector(
     (state: RootState) => state.admin
   );
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/admin/adminPannel/dashboard"); // Redirect to dashboard if already logged in
-    }
-  }, [isAuthenticated, router]);
+  // useEffect(() => {
+  //   if (isAuthenticated ) {
+  //     router.push("/admin/adminPannel/dashboard"); // Redirect to dashboard if already logged in
+  //   }
+  // }, [isAuthenticated, router]);
 
   const onSubmit: SubmitHandler<AdminSignInFormValues> = async (data) => {
     try {
       // Dispatch admin login action
       await dispatch(adminLogin(data)).unwrap();
+      router.push("/admin/adminPannel/dashboard")
     } catch (error) {
       console.error("Sign-in error:", error);
     }
