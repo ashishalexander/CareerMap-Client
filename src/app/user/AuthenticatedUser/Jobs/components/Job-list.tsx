@@ -2,15 +2,14 @@
 
 import React, { useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Job } from '../Types/Job';
+import { IJob } from '../Types/Job';
 import { useAppSelector } from '@/app/store/store';
 import api from '../../../../lib/axios-config';
 
 interface JobListProps {
-  onJobSelect: (job: Job) => void;
+  onJobSelect: (job: IJob) => void;
   selectedJobId?: string;  // Change to string as _id is a string
 }
 
