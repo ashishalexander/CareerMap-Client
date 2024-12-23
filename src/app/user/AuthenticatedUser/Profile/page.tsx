@@ -165,9 +165,9 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
       </div>
 
        {/* Project Section */}
-       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+       {/* <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
         <ProjectProfileComponent isOwnProfile={isOwnProfile} />
-      </div>
+      </div> */}
 
       {/* Activity Section */}
       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
