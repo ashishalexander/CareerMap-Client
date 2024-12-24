@@ -2,7 +2,7 @@
 import React from "react";
 import "./globals.css";
 import Providers from './components/Provider'
-
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "My App",
@@ -18,7 +18,8 @@ export default function RootLayout({
     <html lang="en">
       <body >
         <Providers>
-        {children}
+          <Toaster />
+          {children}
         </Providers>
       </body>
     </html>
