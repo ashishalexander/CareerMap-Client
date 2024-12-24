@@ -1,18 +1,15 @@
 "use client"
-import React,{useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Video, Briefcase, Check, Star } from 'lucide-react';
-import api from '../../../lib/axios-config'
+import api from '../../../lib/axios-config';
 import { useAppDispatch, useAppSelector, RootState } from "../../../store/store";
 import Razorpay from 'razorpay';
 import { toast } from 'sonner';
 import { updateSubscription } from '@/app/store/slices/authSlice';
 import { useRouter } from 'next/navigation';
-
-
-
 
 interface PremiumFeature {
   icon: React.ReactNode;
@@ -27,17 +24,16 @@ interface PlanType {
   yearlyPrice: number;
   features: PremiumFeature[];
   highlight?: boolean;
+  forRole: string;
 }
 
 const PremiumPlans: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const router = useRouter()
-
+  const router = useRouter();
 
   useEffect(() => {
-    // Load Razorpay script
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
@@ -82,26 +78,45 @@ const PremiumPlans: React.FC = () => {
   const plans: PlanType[] = [
     {
       id: 'Professional',
-      title: 'Professional',  
-      monthlyPrice: 29.99,
-      yearlyPrice: 299.99,
+      title: 'Professional',
+      monthlyPrice: 999,
+      yearlyPrice: 9999,
       features: userFeatures,
-      highlight: true
+      highlight: true,
+      forRole: 'user'
     },
     {
       id: 'Recruiter Pro',
       title: 'Recruiter Pro',
-      monthlyPrice: 49.99,
-      yearlyPrice: 499.99,
+      monthlyPrice: 1999,
+      yearlyPrice: 19999,
       features: recruiterFeatures,
-      highlight: true
+      highlight: true,
+      forRole: 'recruiter'
     }
   ];
 
+  // Format price in Indian format
+  const formatIndianPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  // Filter plans based on user role
+  const relevantPlans = plans.filter(plan => plan.forRole === user?.role);
+
   const handleSubscribe = async (planId: string) => {
-    // Validate user login
     if (!user) {
       toast.error("Please login to proceed with subscription");
+      return;
+    }
+
+    // Check if user already has an active subscription
+    if (user.subscription?.isActive) {
+      toast.error("You already have an active subscription");
       return;
     }
 
@@ -114,7 +129,6 @@ const PremiumPlans: React.FC = () => {
 
       const amount = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
 
-      // Create Razorpay order via backend
       const response = await api.post(`/api/users/premium/create-order`, {
         amount,
         currency: 'INR',
@@ -123,26 +137,18 @@ const PremiumPlans: React.FC = () => {
           billingCycle,
         }
       });
-      console.log(response)
 
-      const { 
-        id, 
-        currency, 
-        amount: orderAmount 
-      } = response.data;
+      const { id, currency, amount: orderAmount } = response.data;
 
-      // Razorpay checkout options
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
-        amount: orderAmount, // Amount in paise
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderAmount,
         currency: currency,
         name: "Careermap Premium",
         description: `${plan.title} - ${billingCycle} Subscription`,
         order_id: id,
         handler: async (response: any) => {
-          console.log(response)
           try {
-            // Verify payment on backend
             const verificationResponse = await api.post('/api/users/premium/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -152,12 +158,10 @@ const PremiumPlans: React.FC = () => {
               billingCycle
             });
 
-            // Handle successful payment
             if (verificationResponse.data) {
               toast.success("Subscription activated successfully!");
               dispatch(updateSubscription(verificationResponse.data));
-              router.push('/user/AuthenticatedUser/Home') 
-
+              router.push('/user/AuthenticatedUser/Home');
             } else {
               toast.error("Payment verification failed");
             }
@@ -167,7 +171,7 @@ const PremiumPlans: React.FC = () => {
           }
         },
         prefill: {
-          name: user.firstName || "User", 
+          name: user.firstName || "User",
           email: user.email || "",
           contact: user.mobile || ""
         },
@@ -181,12 +185,12 @@ const PremiumPlans: React.FC = () => {
         },
         modal: {
           ondismiss: () => {
+            console.log('Payment modal closed by the user ⛈️⛈️⛈️.');
             toast.error("Payment cancelled");
           }
         }
       };
 
-      // Open Razorpay checkout
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
 
@@ -196,9 +200,20 @@ const PremiumPlans: React.FC = () => {
     }
   };
 
+  // Show message if no plans are available for user's role
+  if (relevantPlans.length === 0) {
+    return (
+      <div className="w-full max-w-6xl mx-auto p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-700">
+          No premium plans are available for your account type.
+        </h1>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full max-w-6xl mx-auto p-8 space-y-8">
-      <div className="text-center space-y-4">
+    <div className="min-h-screen flex flex-col items-center justify-center w-full max-w-6xl mx-auto p-8">
+      <div className="text-center space-y-4 mb-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Premium Plans
         </h1>
@@ -207,8 +222,7 @@ const PremiumPlans: React.FC = () => {
         </p>
       </div>
 
-      {/* Billing Toggle */}
-      <div className="flex justify-center items-center gap-4 my-8">
+      <div className="flex justify-center items-center gap-4 mb-8">
         <Button 
           variant={billingCycle === 'monthly' ? 'default' : 'outline'}
           onClick={() => setBillingCycle('monthly')}
@@ -226,12 +240,16 @@ const PremiumPlans: React.FC = () => {
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {plans.map((plan) => (
+      <div className={`grid gap-8 w-full ${
+        relevantPlans.length === 1 
+          ? 'md:grid-cols-1 max-w-md mx-auto' 
+          : 'md:grid-cols-2 max-w-4xl'
+      }`}>
+        {relevantPlans.map((plan) => (
           <Card 
             key={plan.id}
             className={`relative flex flex-col h-full transform transition-all duration-300 hover:scale-105 ${
-              plan.highlight ? 'border-2 border-gradient-to-r from-blue-500 to-purple-500' : '' 
+              plan.highlight ? 'border-2 border-gradient-to-r from-blue-500 to-purple-500' : ''
             }`}
           >
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -244,7 +262,7 @@ const PremiumPlans: React.FC = () => {
               <h3 className="text-2xl font-bold">{plan.title}</h3>
               <div className="mt-4">
                 <span className="text-4xl font-bold">
-                  ${billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}
+                  {formatIndianPrice(billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice)}
                 </span>
                 <span className="text-gray-500">
                   /{billingCycle === 'monthly' ? 'month' : 'year'}
@@ -268,10 +286,11 @@ const PremiumPlans: React.FC = () => {
 
             <CardFooter>
               <Button 
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleSubscribe(plan.id)}
+                disabled={user?.subscription?.isActive}
               >
-                Get Started
+                {user?.subscription?.isActive ? 'Already Subscribed' : 'Get Started'}
               </Button>
             </CardFooter>
           </Card>
