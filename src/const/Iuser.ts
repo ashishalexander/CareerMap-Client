@@ -1,5 +1,5 @@
 export interface Iuser {
-    _id:string;
+    _id: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -8,7 +8,7 @@ export interface Iuser {
     password: string;
     __v: number;
     isblocked: boolean;
-    profile:{
+    profile: {
         profilePicture?: string;
         bannerImage?: string;
         about?: string;
@@ -22,28 +22,54 @@ export interface Iuser {
             degree: string;
             startDate: Date;
             endDate: Date;
-            skills:[string];
-            _id:string
-        }]
-        Experience?:[{
-            title: string,
-            employmentType: string,
-            company: string,
-            startDate: Date,
-            endDate: Date,
-            location: string,
-            description: string,
-            _id:string
-        }]
-        Projects?:[{
+            skills: [string];
+            _id: string;
+        }];
+        Experience?: [{
+            _id: string;
+            title: string;
+            employmentType: string;
+            company: string;
+            startDate: Date;
+            endDate: Date;
+            location: string;
+            description: string;
+        }];
+        Projects?: [{
             title?: string;
             description?: string;
             startDate?: Date | null;
             endDate?: Date | null;
             url?: string;
             skills?: string[];
-        }]
-
-    }
+        }];
+    };
+    Network: {
+        connections: [{
+            userId: string;  // Changed from Types.ObjectId to string for frontend
+            connectedAt: Date;
+        }];
+        pendingRequestsSent: [{
+            userId: string;  // Changed from Types.ObjectId to string for frontend
+            sentAt: Date;
+        }];
+        pendingRequestsReceived: [{
+            userId: string;  // Changed from Types.ObjectId to string for frontend
+            sentAt: Date;
+        }];
+    };
+    subscription?: {
+        planType: 'Professional' | 'recruiter-pro' | null;
+        billingCycle: 'monthly' | 'yearly' | null;
+        startDate?: Date | null;
+        endDate?: Date | null;
+        isActive: boolean;
+        paymentHistory?: {
+            transactionId: string;
+            amount: number;
+            date: Date;
+            billingCycle: 'monthly' | 'yearly';
+            planType: 'Professional' | 'recruiter-pro';
+        }[];
+    };
 }
-  

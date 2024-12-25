@@ -16,6 +16,7 @@ import api from '../../../lib/axios-config'
 import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
 import { current } from '@reduxjs/toolkit';
 import ActivityProfileComponent from './components/Activity'
+import RecruiterJobComponent from './components/RecuriterJob';
 interface ProfileSectionProps {
   userId?: string | null;
 }
@@ -26,11 +27,9 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
   console.log(JSON.stringify(currentUser))
   
   const isOwnProfile: boolean = userId === null || (currentUser !== null && userId === currentUser._id);
-  console.log(isOwnProfile+'🤷‍♂️')
 
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
-      console.log(JSON.stringify(updateData))
       const response = await api.post(`/api/users/profile/info/${currentUser?._id}`,updateData)
       if(response&&response.data){
         dispatch(updateUserProfileInfo(response.data)); // Update profile using thunk
@@ -166,14 +165,21 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
       </div>
 
        {/* Project Section */}
-       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+       {/* <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
         <ProjectProfileComponent isOwnProfile={isOwnProfile} />
-      </div>
+      </div> */}
 
       {/* Activity Section */}
       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
         <ActivityProfileComponent isOwnProfile={isOwnProfile} />
       </div>
+
+      {/* Recruiter Job Section - Conditionally Rendered */}
+      {currentUser?.role === 'recruiter' && (
+        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+          <RecruiterJobComponent isOwnProfile={isOwnProfile} />
+        </div>
+      )}
     </div>
 
     

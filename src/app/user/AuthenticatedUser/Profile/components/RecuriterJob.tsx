@@ -12,6 +12,7 @@ import {
   DialogTitle, 
   DialogDescription,
   DialogFooter
+
 } from '@/components/ui/dialog';
 import { useForm, Controller } from 'react-hook-form';
 import * as z from 'zod';
@@ -26,6 +27,7 @@ const CustomQuestionSchema = z.object({
   type: z.enum(["text", "multiple-choice"]),
   options: z.array(z.string()).optional()
 });
+
 // Job Post Schema
 const JobPostSchema = z.object({
   title: z.string().min(1, "Job title is required").max(100),
@@ -40,6 +42,7 @@ const JobPostSchema = z.object({
   contactEmail: z.string().email("Invalid email address"),
   customQuestions: z.array(CustomQuestionSchema).optional()
 
+
 });
 
 // Types
@@ -50,6 +53,7 @@ interface CustomQuestion {
   type: "text" | "multiple-choice";
   options?: string[];
 }
+
 
 interface JobPost extends JobPostFormData {
   _id: string;
@@ -70,6 +74,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
   const [deleteConfirmJobId, setDeleteConfirmJobId] = useState<string | null>(null);
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
+
   // Form Hook
   const {
     control,
@@ -89,6 +94,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
       salary: '',
       contactEmail: '',
       customQuestions: []
+
 
     }
   });
@@ -116,6 +122,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
   // Save Job Post Handler
   const handleSaveJobPost = useCallback(async (data: JobPostFormData) => {
     try {
+
       const jobData = {
         ...data,
         recruiter: user?._id,
@@ -132,16 +139,19 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
       setIsJobDialogOpen(false);
       setEditingJobId(null);
       setCustomQuestions([]); // Reset custom questions
+
       reset();
     } catch (error) {
       console.error('Failed to save job post:', error);
     }
   }, [editingJobId, reset, fetchJobPosts, user?._id, customQuestions]);
+
   // Delete Job Post Handler
   const handleDeleteJobPost = async (jobId: string) => {
     try {
       await api.delete(`/api/users/recruiter/${jobId}/${user?._id}`);
       setDeleteConfirmJobId(null); // Close the confirmation dialog
+
       
       // Refetch job posts after deletion
       await fetchJobPosts();
@@ -158,6 +168,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
     Object.entries(jobPost).forEach(([key, value]) => {
       setValue(key as keyof JobPostFormData, value);
     });
+
     
     setIsJobDialogOpen(true);
   }, [setValue]);
@@ -166,6 +177,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
   const handleStartNew = useCallback(() => {
     setEditingJobId(null);
     setCustomQuestions([]);
+
     reset();
     setIsJobDialogOpen(true);
   }, [reset]);
@@ -226,6 +238,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
     }));
   };
 
+
   // Job Post Display Component
   const JobPostDisplay: React.FC<{ jobPost: JobPost }> = 
     useCallback(({ jobPost }) => (
@@ -253,6 +266,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
               variant="ghost" 
               size="icon"
               onClick={() => setDeleteConfirmJobId(jobPost._id)} // Open confirmation dialog
+
               className="hover:bg-red-100 text-red-500"
             >
               <Trash2 className="h-4 w-4" />
@@ -318,6 +332,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
 
         {/* Job Post Dialog */}
         <Dialog open={isJobDialogOpen} onOpenChange={setIsJobDialogOpen}>
@@ -582,6 +597,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
                   ))}
                 </div>
               </div>
+
               </div>
 
               <div className="pt-4">

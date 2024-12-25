@@ -2,19 +2,22 @@
 
 import React, { useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Job } from '../Types/Job';
+import { IJob } from '../Types/Job';
+import { useAppSelector } from '@/app/store/store';
+import api from '../../../../lib/axios-config';
 
 interface JobListProps {
-  onJobSelect: (job: Job) => void;
-  selectedJobId?: number;
+  onJobSelect: (job: IJob) => void;
+  selectedJobId?: string;  // Change to string as _id is a string
 }
 
 export function JobList({ onJobSelect, selectedJobId }: JobListProps) {
+  const userId = useAppSelector((state) => state.auth.user?._id);
+
   const fetchJobs = async ({ pageParam = 1 }) => {
-    const response = await axios.get('/api/jobs', {
+    const response = await api.get(`/api/users/jobs/${userId}`, {
       params: { 
         page: pageParam, 
         limit: 10 
@@ -30,11 +33,11 @@ export function JobList({ onJobSelect, selectedJobId }: JobListProps) {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ['jobs'],
+    queryKey: ['jobs', userId],
     queryFn: fetchJobs,
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    initialPageParam: 1, // Fix the missing parameter.
+    initialPageParam: 1,
   });
 
   const jobs = data?.pages.flatMap((page) => page.jobs) || [];
@@ -65,9 +68,9 @@ export function JobList({ onJobSelect, selectedJobId }: JobListProps) {
         ) : (
           jobs.map((job) => (
             <div
-              key={job.id}
+              key={job._id}  // Use _id here
               className={`cursor-pointer p-3 hover:bg-gray-100 
-                ${selectedJobId === job.id ? 'bg-blue-50' : ''} 
+                ${selectedJobId === job._id ? 'bg-blue-50' : ''} 
                 transition-colors duration-200
               `}
               onClick={() => onJobSelect(job)}
