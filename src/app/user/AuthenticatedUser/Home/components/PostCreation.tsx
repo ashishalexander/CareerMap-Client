@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Briefcase, X } from "lucide-react";
+import { PlusCircle, Briefcase, X, Trash2, Plus } from "lucide-react";
 import { useAppSelector } from '@/app/store/store';
 import { Separator } from "@/components/ui/separator";
 import api from '@/app/lib/axios-config';
@@ -21,6 +21,12 @@ const PostSchema = z.object({
   message: "Either text or media must be provided"
 });
 
+const CustomQuestionSchema = z.object({
+  question: z.string().min(1, "Question is required"),
+  type: z.enum(["text", "multiple-choice"]),
+  options: z.array(z.string()).optional()
+});
+
 const JobPostSchema = z.object({
   title: z.string().min(1, "Job title is required").max(100),
   company: z.string().min(1, "Company name is required").max(100),
@@ -31,8 +37,16 @@ const JobPostSchema = z.object({
   description: z.string().min(50, "Description must be at least 50 characters").max(2000),
   requirements: z.string().min(20, "Requirements must be at least 20 characters").max(1000),
   salary: z.string().optional(),
-  contactEmail: z.string().email("Invalid email address")
+  contactEmail: z.string().email("Invalid email address"),
+  customQuestions: z.array(CustomQuestionSchema).optional()
+
 });
+
+interface CustomQuestion {
+  question: string;
+  type: "text" | "multiple-choice";
+  options?: string[];
+}
 
 export const CreatePost: React.FC = () => {
   // Regular post states
@@ -53,7 +67,9 @@ export const CreatePost: React.FC = () => {
     description: '',
     requirements: '',
     salary: '',
-    contactEmail: ''
+    contactEmail: '',
+    customQuestions: [] as CustomQuestion[]
+
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -98,6 +114,81 @@ export const CreatePost: React.FC = () => {
     // Clear error for this field when user starts typing
     setFieldErrors(prev => ({ ...prev, [field]: '' }));
   };
+
+    // New handlers for custom questions
+    const addCustomQuestion = () => {
+      setJobPost(prev => ({
+        ...prev,
+        customQuestions: [...prev.customQuestions, {
+          question: '',
+          type: 'text',
+          options: []
+        }]
+      }));
+    };
+  
+    const removeCustomQuestion = (index: number) => {
+      setJobPost(prev => ({
+        ...prev,
+        customQuestions: prev.customQuestions.filter((_, i) => i !== index)
+      }));
+    };
+  
+    const updateCustomQuestion = (index: number, field: keyof CustomQuestion, value: any) => {
+      setJobPost(prev => ({
+        ...prev,
+        customQuestions: prev.customQuestions.map((q, i) => {
+          if (i === index) {
+            return { ...q, [field]: value };
+          }
+          return q;
+        })
+      }));
+    };
+  
+    const addOption = (questionIndex: number) => {
+      setJobPost(prev => ({
+        ...prev,
+        customQuestions: prev.customQuestions.map((q, i) => {
+          if (i === questionIndex) {
+            return {
+              ...q,
+              options: [...(q.options || []), '']
+            };
+          }
+          return q;
+        })
+      }));
+    };
+  
+    const updateOption = (questionIndex: number, optionIndex: number, value: string) => {
+      setJobPost(prev => ({
+        ...prev,
+        customQuestions: prev.customQuestions.map((q, i) => {
+          if (i === questionIndex) {
+            const newOptions = [...(q.options || [])];
+            newOptions[optionIndex] = value;
+            return { ...q, options: newOptions };
+          }
+          return q;
+        })
+      }));
+    };
+  
+    const removeOption = (questionIndex: number, optionIndex: number) => {
+      setJobPost(prev => ({
+        ...prev,
+        customQuestions: prev.customQuestions.map((q, i) => {
+          if (i === questionIndex) {
+            return {
+              ...q,
+              options: (q.options || []).filter((_, oi) => oi !== optionIndex)
+            };
+          }
+          return q;
+        })
+      }));
+    };
 
   const handleArticleSubmit = async () => {
     if (!userId) {
@@ -168,7 +259,9 @@ export const CreatePost: React.FC = () => {
         description: '',
         requirements: '',
         salary: '',
-        contactEmail: ''
+        contactEmail: '',
+        customQuestions: []
+
       });
       setIsJobDialogOpen(false);
       setFieldErrors({});
@@ -438,6 +531,90 @@ export const CreatePost: React.FC = () => {
                       )}
                     </div>
                   </div>
+
+                  <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Custom Questions (Optional)</h3>
+                    <Button
+                      onClick={addCustomQuestion}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Plus size={16} />
+                      Add Question
+                    </Button>
+                  </div>
+                  <Separator />
+                  
+                  <div className="space-y-6">
+                    {jobPost.customQuestions.map((question, index) => (
+                      <div key={index} className="p-4 border rounded-lg space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2 flex-1">
+                            <Label>Question {index + 1}</Label>
+                            <Input
+                              value={question.question}
+                              onChange={(e) => updateCustomQuestion(index, 'question', e.target.value)}
+                              placeholder="Enter your question"
+                            />
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeCustomQuestion(index)}
+                            className="ml-2"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Question Type</Label>
+                          <select
+                            className="w-full border rounded-md p-2"
+                            value={question.type}
+                            onChange={(e) => updateCustomQuestion(index, 'type', e.target.value)}
+                          >
+                            <option value="text">Text Answer</option>
+                            <option value="multiple-choice">Multiple Choice</option>
+                          </select>
+                        </div>
+
+                        {question.type === 'multiple-choice' && (
+                          <div className="space-y-2">
+                            <Label>Options</Label>
+                            {question.options?.map((option, optionIndex) => (
+                              <div key={optionIndex} className="flex gap-2">
+                                <Input
+                                  value={option}
+                                  onChange={(e) => updateOption(index, optionIndex, e.target.value)}
+                                  placeholder={`Option ${optionIndex + 1}`}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeOption(index, optionIndex)}
+                                >
+                                  <X size={16} />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addOption(index)}
+                              className="mt-2"
+                            >
+                              Add Option
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  </div>
+
                 </div>
 
                 <div className="pt-4">
