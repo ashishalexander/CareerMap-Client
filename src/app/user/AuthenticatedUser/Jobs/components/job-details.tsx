@@ -1,12 +1,16 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { IJob } from '../Types/Job';
-
+import { useRouter } from 'next/navigation';
 interface JobDetailsProps {
   job: IJob;
 }
 
 export function JobDetails({ job }: JobDetailsProps) {
+  const router = useRouter()
+  const handleApply = ()=>{
+    router.push(`/user/AuthenticatedUser/Jobs/JobApplication/${job._id}`)
+  }
   return (
     <div className="space-y-6">
       <div className="mb-4">
@@ -36,21 +40,6 @@ export function JobDetails({ job }: JobDetailsProps) {
                   ))}
               </ul>
             </div>
-            {/* {job.skills && (
-              <div>
-                <h3 className="font-semibold mb-2">Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {job.skills.map((skill, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )} */}
           </div>
         </CardContent>
         <CardFooter className="justify-between">
@@ -58,9 +47,9 @@ export function JobDetails({ job }: JobDetailsProps) {
             <p className="text-lg font-semibold">Salary: {job.salary}</p>
             <p className="text-gray-500">Contact: {job.contactEmail}</p>
           </div>
-          <Button>Apply Now</Button>
+          <Button onClick={handleApply}>Apply Now</Button>
         </CardFooter>
-      </Card>
+      </Card> 
     </div>
   );
 }
