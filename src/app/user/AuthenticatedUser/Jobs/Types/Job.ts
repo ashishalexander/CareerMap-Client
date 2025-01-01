@@ -11,6 +11,11 @@ export interface IJob  {
     recruiter: string; 
     createdAt: Date;
     updatedAt: Date;
+    customQuestions?: Array<{
+      question: string;
+      type: string;      // 'text' | 'multiple-choice'
+      options?: string[];
+  }>;
   }
   
   
