@@ -1,9 +1,12 @@
 // socketTypes.ts
+import { INotification } from "@/app/user/AuthenticatedUser/Notifications/Types/INotification";
 import type { Socket } from "socket.io-client";
 
 export interface ServerToClientEvents {
   "force-logout": (data: { message: string }) => void;
   "broadcast": (data: { message: string }) => void;
+  "notification:received": (notification: INotification) => void;
+  "notification:error": (error: { message: string }) => void;
 }
 
 export interface ClientToServerEvents {

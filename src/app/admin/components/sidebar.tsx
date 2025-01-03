@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Home, Users, Settings, LogOut } from 'lucide-react';
+import { Home, Users, Settings, LogOut, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppDispatch } from '../../store/store'; // Import useAppDispatch
@@ -24,11 +24,16 @@ const sidebarItems = [
     route: '/admin/adminPannel/recruiterManagement'
   },
   { 
+    icon: <Bell size={20} />, 
+    label: 'Notifications', 
+    route: '/admin/adminPannel/Notifications'
+  },
+  { 
     icon: <LogOut size={20} />, 
     label: 'Logout', 
     route: '', // Remove route for logout item
     onClick: 'logout' // Special identifier for logout
-  }
+  },  
 ];
 
 interface SidebarItemProps {
@@ -73,9 +78,6 @@ const Sidebar = () => {
     
     // Clear session storage
     sessionStorage.removeItem("adminAccessToken");
-
-    // Purge persisted state to clear persisted data
-    // persistor.purge();
 
     // Redirect to login page after logout
     window.location.href = '/admin/signIn'; // Or use Next.js router to navigate
