@@ -1,23 +1,48 @@
-import { io } from "socket.io-client";
-import type { SocketWithEvents } from "./Types/socketTypes";
+import { io, Socket } from 'socket.io-client';
 
-// Create the socket connection
-const socket: SocketWithEvents = io("http://localhost:3000", {
-  transports: ["websocket"], // Optional: Defines the transport protocol
-});
+let socket: Socket;
 
-// Example of emitting an event to the server
-function registerUser(userId: string) {
-  socket.emit("register", userId);
-}
+export const initSocket = () => {
+  if (!socket) {
+    socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000', {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      transports: ['websocket', 'polling'], // Add this
+      withCredentials: true, // Add this
+    });
 
-// Example of listening to events from the server
-socket.on("force-logout", (data) => {
-  console.log(data.message);  // Show the logout message
-});
+     // Add more detailed logging
+     socket.on('connect', () => {
+      console.log('Socket connected with ID:', socket.id);
+    });
 
-socket.on("broadcast", (data) => {
-  console.log(data.message);  // Broadcast message from admin
-});
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected because:', reason);
+    });
 
-export { socket, registerUser };
+    socket.on('connect_error', (err) => {
+      console.error('Connection error:', err.message);
+    });
+
+    socket.onAny((eventName, ...args) => {
+      console.log('Received event:', eventName, args);
+    });
+    // Add this to debug connection status
+    socket.on('reconnect_attempt', (attempt) => {
+      console.log('Reconnection attempt:', attempt);
+    });
+
+    socket.on('reconnect_failed', () => {
+      console.log('Failed to reconnect');
+    });
+  }
+  return socket;  
+};
+
+export const getSocket = () => {
+  if (!socket) {
+    return initSocket();
+  }
+  return socket;
+};
