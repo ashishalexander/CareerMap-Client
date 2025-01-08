@@ -1,6 +1,7 @@
 // Types
 interface IProfile {
     profilePicture?: string;
+    headline?:string;
 }
   
   interface IUser {

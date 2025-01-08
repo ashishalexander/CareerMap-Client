@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Home, Users, Settings, LogOut, Bell } from 'lucide-react';
+import { Home, Users, Settings, LogOut, Bell, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppDispatch } from '../../store/store'; // Import useAppDispatch
@@ -27,6 +27,11 @@ const sidebarItems = [
     icon: <Bell size={20} />, 
     label: 'Notifications', 
     route: '/admin/adminPannel/Notifications'
+  },
+  { 
+    icon: <Shield size={20} />, // Added Shield icon for content moderation
+    label: 'Content Moderation', 
+    route: '/admin/adminPannel/ContentMod'
   },
   { 
     icon: <LogOut size={20} />, 
