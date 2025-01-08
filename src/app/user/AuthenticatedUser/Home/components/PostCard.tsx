@@ -13,6 +13,7 @@ import api from '../../../../lib/axios-config';
 import { useRouter } from 'next/navigation';
 import { CommentSection } from './PostComment';
 import { cn } from '@/lib/utils';
+import { ReportModal } from './ReportPostModal';
 
 
 // API Functions
@@ -49,6 +50,7 @@ interface PostFeedProps {
 
 export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+  const [reportingPostId, setReportingPostId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -173,15 +175,21 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
   return (
     <div className="container mx-auto max-w-xl py-6">
       {posts.map((post) => (
-        <Card key={post._id} className="mb-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow">
+        <Card
+          key={post._id}
+          className="mb-6 border rounded-xl shadow-sm hover:shadow-md transition-shadow"
+        >
           <CardContent className="p-6">
             {/* Post Header */}
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-4">
-                <img 
-                  src={post.author.profile.profilePicture || 'https://placehold.jp/30x40.png'} 
-                  alt={`${post.author.firstName}'s profile`} 
-                  className="w-12 h-12 rounded-full object-cover border-2 border-gray-200" 
+                <img
+                  src={
+                    post.author.profile.profilePicture ||
+                    "https://placehold.jp/30x40.png"
+                  }
+                  alt={`${post.author.firstName}'s profile`}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
                 />
                 <div>
                   <h3 className="font-semibold text-lg">
@@ -199,25 +207,34 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
                   <MoreVertical className="text-gray-500 hover:text-gray-700" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem className="cursor-pointer">Report Post</DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">Hide Post</DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => setReportingPostId(post._id)}
+                  >
+                    Report Post
+                  </DropdownMenuItem>{" "}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
+            <ReportModal
+              isOpen={reportingPostId !== null}
+              onClose={() => setReportingPostId(null)}
+              postId={reportingPostId || ""}
+              userId={user._id}
+            />
+
             {/* Post Content */}
             <p className="text-gray-800 mb-6 leading-relaxed">{post.text}</p>
-
-            
 
             {/* Media Section */}
             {post.media && post.media.length > 0 && (
               <div className="mb-6 grid grid-cols-1 gap-4">
                 {post.media.map((media, mediaIndex) => (
                   <div key={mediaIndex} className="rounded-lg overflow-hidden">
-                    {media.type === 'image' ? (
+                    {media.type === "image" ? (
                       <div>
-                        <img 
+                        <img
                           src={media.url}
                           alt={media.description || "Post media"}
                           className="w-full object-cover max-h-[450px] rounded-lg"
@@ -229,7 +246,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
                         )}
                       </div>
                     ) : (
-                      <video 
+                      <video
                         src={media.url}
                         controls
                         className="w-full rounded-lg"
@@ -242,39 +259,46 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
 
             {/* Action Buttons */}
             <div className="flex items-center justify-between border-t pt-4">
-              <button 
+              <button
                 onClick={() => handleLike(post)}
                 className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors group"
               >
-                <Heart 
-                  size={20} 
+                <Heart
+                  size={20}
                   className={`group-hover:scale-110 transition-transform ${
-                    post.likes.some(like => like.userId === user._id) 
-                      ? 'fill-current text-red-500' 
-                      : ''
+                    post.likes.some((like) => like.userId === user._id)
+                      ? "fill-current text-red-500"
+                      : ""
                   }`}
                 />
                 <span>{post.likes.length}</span>
               </button>
 
-              <button 
-                onClick={() => setActiveCommentPostId(activeCommentPostId === post._id ? null : post._id)}
+              <button
+                onClick={() =>
+                  setActiveCommentPostId(
+                    activeCommentPostId === post._id ? null : post._id
+                  )
+                }
                 className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors group"
               >
-                <MessageSquare size={20} className={cn(
-                  "group-hover:scale-110 transition-transform",
-                  activeCommentPostId === post._id ? "text-blue-500" : ""
-                )} />
+                <MessageSquare
+                  size={20}
+                  className={cn(
+                    "group-hover:scale-110 transition-transform",
+                    activeCommentPostId === post._id ? "text-blue-500" : ""
+                  )}
+                />
                 <span>{post.comments.length}</span>
               </button>
             </div>
           </CardContent>
           <CommentSection
-                isOpen={activeCommentPostId === post._id}
-                onClose={() => setActiveCommentPostId(null)}
-                post={post}
-                user={user}
-              />
+            isOpen={activeCommentPostId === post._id}
+            onClose={() => setActiveCommentPostId(null)}
+            post={post}
+            user={user}
+          />
         </Card>
       ))}
 
@@ -289,12 +313,12 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
       {/* Load More Button */}
       {hasNextPage && (
         <div className="text-center py-6">
-          <button 
+          <button
             onClick={() => fetchNextPage()}
             disabled={isFetchingNextPage}
             className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
           >
-            {isFetchingNextPage ? 'Loading...' : 'Load More Posts'}
+            {isFetchingNextPage ? "Loading..." : "Load More Posts"}
           </button>
         </div>
       )}
