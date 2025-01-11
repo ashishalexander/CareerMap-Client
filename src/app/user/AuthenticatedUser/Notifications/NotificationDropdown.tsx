@@ -1,7 +1,7 @@
 // src/components/notifications/NotificationDropdown.tsx
 import React, { useState } from 'react';
-import { NotificationIcon } from './NotificaitonIcon';
-import { NotificationList } from './NotificaitonList';
+import { NotificationIcon } from './NotificationIcon';
+import { NotificationList } from './NotificationList';
 
 export const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);

@@ -1,105 +1,103 @@
 'use client'
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useNotification } from './hooks/useNotification';
-import { useExistingNotifications } from './ExistingNotifications';
 import { formatDistanceToNow } from 'date-fns';
-import { Bell, Loader2 } from 'lucide-react';
+import { 
+  Bell, 
+  UserPlus, 
+  ThumbsUp, 
+  MessageCircle, 
+  Briefcase,
+  MoreHorizontal 
+} from 'lucide-react';
+
+// Notification type icons mapping
+const notificationIcons: Record<string, React.ReactNode> = {
+  CONNECTION: <UserPlus className="w-4 h-4" />,
+  LIKE: <ThumbsUp className="w-4 h-4" />,
+  COMMENT: <MessageCircle className="w-4 h-4" />,
+  JOB: <Briefcase className="w-4 h-4" />,
+  DEFAULT: <Bell className="w-4 h-4" />
+};
 
 const NotificationsPage = () => {
-  const { notifications: realtimeNotifications } = useNotification();
-  const { notifications: existingNotifications, loading, error } = useExistingNotifications();
-
-  // Combine and sort notifications by date
-  const allNotifications = [...realtimeNotifications, ...existingNotifications]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const { noti } = useNotification();
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Card>
-        <CardHeader className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Bell className="w-6 h-6 text-blue-600" />
-            <CardTitle>Notifications</CardTitle>
-          </div>
+    <div className="max-w-3xl mx-auto bg-white min-h-screen">
+      {/* Header */}
+      <div className="border-b sticky top-0 bg-white z-10">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              {!loading && allNotifications.length === 0 
-                ? 'No notifications yet' 
-                : `You have ${allNotifications.length} notification${allNotifications.length === 1 ? '' : 's'}`
-              }
-            </p>
-            {loading && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading notifications...
-              </div>
-            )}
+            <h1 className="text-xl font-semibold">Notifications</h1>
+            <button 
+              className="text-gray-600 hover:bg-gray-100 p-2 rounded-full"
+            >
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
           </div>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="text-red-600 bg-red-50 p-4 rounded-md mb-4">
-              {error}
-            </div>
-          )}
-          
-          <div className="divide-y">
-            {loading ? (
-              <div className="py-12 text-center">
-                <Loader2 className="w-12 h-12 text-gray-300 mx-auto mb-4 animate-spin" />
-                <p className="text-gray-500">Loading your notifications...</p>
-              </div>
-            ) : allNotifications.length > 0 ? (
-              allNotifications.map((notification) => (
-                <div 
-                  key={notification._id}
-                  className="py-4 hover:bg-gray-50 transition-colors rounded-md px-4 -mx-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1 flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {notification.title}
-                      </h3>
-                      <p className="text-gray-600">
+        </div>
+      </div>
+
+      {/* Notifications List */}
+      <div className="divide-y">
+        {noti.length > 0 ? (
+          noti.map((notification) => {
+            const notificationDate = new Date(notification.createdAt);
+
+            return (
+              <div 
+                key={notification._id}
+                className="p-4 transition-colors flex gap-3 bg-white hover:bg-gray-50"
+              >
+                {/* Icon Container */}
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    {notificationIcons[notification.type || 'DEFAULT']}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-gray-900">
+                        <span className="font-medium">
+                          {notification.title}
+                        </span>
+                      </p>
+                      <p className="text-gray-600 mt-1">
                         {notification.message}
                       </p>
                       {notification.link && (
                         <a 
                           href={notification.link}
-                          className="text-blue-600 hover:text-blue-700 text-sm inline-block mt-2"
+                          className="mt-2 text-blue-600 hover:text-blue-700 hover:underline text-sm inline-block"
                         >
                           View details
                         </a>
                       )}
+                      <p className="text-gray-400 text-sm mt-1">
+                        {formatDistanceToNow(notificationDate, { 
+                          addSuffix: true 
+                        })}
+                      </p>
                     </div>
-                    <span className="text-sm text-gray-400 whitespace-nowrap">
-                      {formatDistanceToNow(new Date(notification.createdAt), { 
-                        addSuffix: true 
-                      })}
-                    </span>
                   </div>
-                  {notification.status === 'FAILED' && (
-                    <div className="mt-2">
-                      <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                        Failed to send
-                      </span>
-                    </div>
-                  )}
                 </div>
-              ))
-            ) : (
-              <div className="py-12 text-center">
-                <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">You don't have any notifications yet</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  When you receive notifications, they'll appear here
-                </p>
               </div>
-            )}
+            );
+          })
+        ) : (
+          <div className="py-16 text-center">
+            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 font-medium">No notifications yet</p>
+            <p className="text-sm text-gray-400 mt-1">
+              We'll notify you when something new arrives
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   );
 };

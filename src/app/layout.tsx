@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from './components/Provider'
 import { Toaster } from "sonner";
 import { SocketProvider } from "./providers";
+import { NotificationWrapper } from "./components/NotificationWrapper";
 export const metadata = {
   title: "My App",
   description: "A description of my app",
@@ -19,8 +20,11 @@ export default function RootLayout({
           <body >
             <Providers>
               <SocketProvider>
-              <Toaster />
-              {children}
+                <NotificationWrapper>
+                <Toaster />
+                {children}
+                </NotificationWrapper>
+              
               </SocketProvider>
             </Providers>
           </body>

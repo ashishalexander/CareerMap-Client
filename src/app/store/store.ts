@@ -2,6 +2,7 @@ import { configureStore,combineReducers } from '@reduxjs/toolkit'
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 import authReducer from './slices/authSlice'
 import adminReducer from './slices/adminSlice'
+import notificationReducer from './slices/notificationSlice'
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // Import storage correctly
 
@@ -13,6 +14,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   admin: adminReducer,
+  notificat: notificationReducer 
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
