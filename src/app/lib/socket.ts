@@ -25,9 +25,9 @@ export const initSocket = () => {
       console.error('Connection error:', err.message);
     });
 
-    socket.onAny((eventName, ...args) => {
-      console.log('Received event:', eventName, args);
-    });
+    // socket.onAny((eventName, ...args) => {
+    //   console.log('Received event:', eventName, args);
+    // });
     // Add this to debug connection status
     socket.on('reconnect_attempt', (attempt) => {
       console.log('Reconnection attempt:', attempt);

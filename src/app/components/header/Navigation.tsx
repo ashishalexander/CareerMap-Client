@@ -1,28 +1,27 @@
-// src/components/Navigation.tsx
-"use client"
+import React from 'react';
 import Link from 'next/link';
 import { Home, Users, Briefcase, MessageSquare, Bell } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import React from 'react';
-import { NotificationIcon } from '../../user/AuthenticatedUser/Notifications/NotificaitonIcon';
+import { useAppSelector } from '../../store/store';
+import { NotificationIcon } from '../../user/AuthenticatedUser/Notifications/NotificationIcon';
 
 interface NavItemProps {
   icon: React.ElementType;
   text: string;
   href: string;
   isActive: boolean;
-  isNotification?: boolean;
+  hasNewNotifications?: boolean;
 }
 
-const NavItem = ({ icon: Icon, text, href, isActive, isNotification }: NavItemProps) => (
-  <Link 
-    href={href} 
+const NavItem = ({ icon: Icon, text, href, isActive, hasNewNotifications }: NavItemProps) => (
+  <Link
+    href={href}
     className={`flex flex-col items-center px-3 ${
       isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
     }`}
   >
-    {isNotification ? (
-      <NotificationIcon  />
+    {text === 'Notifications' && hasNewNotifications? (
+      <NotificationIcon />
     ) : (
       <Icon className="h-6 w-6" />
     )}
@@ -32,22 +31,29 @@ const NavItem = ({ icon: Icon, text, href, isActive, isNotification }: NavItemPr
 
 export const Navigation = () => {
   const pathname = usePathname();
-  
+  const hasNewNotifications = useAppSelector((state) => state.notificat.hasNewNotifications);
+
   const navItems = [
     { icon: Home, text: 'Home', href: '/user/AuthenticatedUser/Home' },
     { icon: Users, text: 'Network', href: '/user/AuthenticatedUser/Network' },
     { icon: Briefcase, text: 'Jobs', href: '/user/AuthenticatedUser/Jobs' },
     { icon: MessageSquare, text: 'Messages', href: '/messages' },
-    { icon: Bell, text: 'Notifications', href: '/user/AuthenticatedUser/Notifications', isNotification: true }
+    {
+      icon: Bell,
+      text: 'Notifications',
+      href: '/user/AuthenticatedUser/Notifications',
+      hasNewNotifications,
+    },
   ];
 
   return (
     <nav className="hidden md:flex items-center justify-center flex-1 ml-[115px] space-x-5">
       {navItems.map((item) => (
-        <NavItem 
+        <NavItem
           key={item.href}
           {...item}
           isActive={pathname === item.href}
+          hasNewNotifications={item.text === 'Notifications' ? hasNewNotifications : undefined}
         />
       ))}
     </nav>
