@@ -1,61 +1,142 @@
-// src/hooks/useNotification.tsx
 import { useEffect, useState } from 'react';
-import { useSocket } from '../../../../providers';
+import { useSocket } from '../../providers';
 import { useAppDispatch, useAppSelector } from '../../../../store/store';
-import { toast } from 'sonner';
-import { setNewNotification, clearNewNotificationIndicator } from '../../../../store/slices/notificationSlice';
-import api from '@/app/lib/axios-config';
-import { INotification } from '../Types/INotification';
 import { usePathname } from 'next/navigation';
+import api from '@/app/lib/axios-config';
+import { CombinedNotification, INotification, IUserNotification } from '../Types/INotification';
+import { clearNewNotificationIndicator } from '@/app/store/slices/notificationSlice';
+
+interface PopulatedSenderId {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  profile: {
+    profilePicture: string;
+  };
+}
+
+interface PopulatedUserNotification extends Omit<IUserNotification, 'senderId'> {
+  senderId: PopulatedSenderId;
+  message?: string;
+}
 
 export const useNotification = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
   const pathname = usePathname();
-  const [noti, setNoti] = useState<INotification[]>([]);
+  const [notifications, setNotifications] = useState<CombinedNotification[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const notificationState = useAppSelector((state) => state.notificat);
+  const user = useAppSelector((state) => state.auth.user);
 
-  
-  // Clear notification indicator when visiting notifications page
+  // Transform admin notification to combined format
+  const transformAdminNotification = (notification: INotification): CombinedNotification => ({
+    _id: notification._id,
+    type: 'general',
+    title: notification.title,
+    message: notification.message,
+    link: notification.link,
+    createdAt: new Date(notification.createdAt),
+    source: 'admin'
+  });
+
+  // Transform user notification to combined format
+  const transformUserNotification = (notification: PopulatedUserNotification): CombinedNotification => ({
+    _id: notification._id,
+    type: notification.type,
+    message: notification.message || '',
+    createdAt: new Date(notification.createdAt),
+    senderId: notification.senderId._id,
+    senderName: `${notification.senderId.firstName} ${notification.senderId.lastName}`,
+    senderAvatar: notification.senderId.profile?.profilePicture,
+    receiverId: notification.receiverId,
+    postId: notification.postId,
+    source: 'user',
+  });
+
+  // Handle real-time notifications
+  useEffect(() => {
+    if (!socket || !user?._id) return;
+
+    const handleNewAdminNotification = (notification: INotification) => {
+      const transformedNotification = transformAdminNotification(notification);
+      setNotifications(prev => [transformedNotification, ...prev]);
+    };
+
+    const handleNewUserNotification = async (notification: IUserNotification) => {
+      try {
+        // Fetch the sender's details since the socket notification might not include full user data
+        const response = await api.get(`/api/users/FetchUserData/${notification.senderId}`);
+        const senderData = response.data;
+        console.log(senderData)
+        
+        const populatedNotification: PopulatedUserNotification = {
+          ...notification,
+          createdAt: notification.createdAt || new Date().toISOString(),
+          senderId: {
+            _id: senderData._id,
+            firstName: senderData.firstName,
+            lastName: senderData.lastName,
+            profile: {
+              profilePicture: senderData.profile?.profilePicture
+            }
+          }
+        };
+
+        const transformedNotification = transformUserNotification(populatedNotification);
+        setNotifications(prev => [transformedNotification, ...prev]);
+      } catch (error) {
+        console.error('Failed to fetch sender details:', error);
+      }
+    };
+
+    socket.on('admin:notification', handleNewAdminNotification);
+    socket.on('user:notification', handleNewUserNotification);
+
+    return () => {
+      socket.off('admin:notification', handleNewAdminNotification);
+      socket.off('user:notification', handleNewUserNotification);
+    };
+  }, [socket, user?._id]);
+
+  // Clear notification indicator when on notifications page
   useEffect(() => {
     if (pathname === '/user/AuthenticatedUser/Notifications') {
       dispatch(clearNewNotificationIndicator());
     }
   }, [pathname, dispatch]);
 
-  // Fetch existing notifications
+  // Fetch initial notifications
   useEffect(() => {
-    const fetchExistingNotifications = async () => {
+    const fetchAllNotifications = async () => {
       try {
-        const response = await api.get('/api/users/fetch/existingNotifications');
-        console.log(notificationState)
-        setNoti(response.data);
+        setLoading(true);
+        
+        const [adminResponse, userResponse] = await Promise.all([
+          api.get('/api/users/fetch/existingNotifications'),
+          api.get(`/api/users/fetch/userNotifications/${user?._id}`)
+        ]);
+
+        const adminNotifications = adminResponse.data.map(transformAdminNotification);
+        const userNotifications = userResponse.data.map(transformUserNotification);
+
+        const combinedNotifications = [...adminNotifications, ...userNotifications]
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+        setNotifications(combinedNotifications);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchExistingNotifications();
-  }, []);
+    if (user?._id) {
+      fetchAllNotifications();
+    }
+  }, [user?._id]);
 
-  // Listen for new notifications
-  // useEffect(() => {
-  //   if (!socket) return;
-
-  //   socket.on('notification:received', (notification: INotification) => {
-  //     setNoti(prev => [notification, ...prev]);
-  //     dispatch(setNewNotification());
-      
-  //     toast(notification.title, {
-  //       description: notification.message,
-  //     });
-  //   });
-
-  //   return () => {
-  //     socket.off('notification:received');
-  //   };
-  // }, [socket, dispatch]);
-
-  return { noti };
+  return { notifications, loading };
 };
