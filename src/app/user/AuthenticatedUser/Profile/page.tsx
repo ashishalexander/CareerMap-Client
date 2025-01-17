@@ -1,5 +1,5 @@
 "use client";
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../../store/store'; // Import custom hooks
 import { ProfileBanner } from './components/ProfileBanner';
 import { ProfileAvatar } from './components/ProfileAvatar';
@@ -24,8 +24,7 @@ interface ProfileSectionProps {
 const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
   const dispatch = useAppDispatch(); // Use custom useAppDispatch hook
   const currentUser = useAppSelector((state: RootState) => state.auth.user); // Accessing profile from profileSlice
-  console.log(JSON.stringify(currentUser))
-  
+  // const[loading,setLoading] =useState(true)
   const isOwnProfile: boolean = userId === null || (currentUser !== null && userId === currentUser._id);
 
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
