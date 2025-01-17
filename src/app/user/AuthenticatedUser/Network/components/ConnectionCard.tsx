@@ -2,19 +2,27 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { UserPlus, UserX, Users } from 'lucide-react';
+import { UserPlus, Users, User } from 'lucide-react';
 import { users } from '../types/network';
 import Link from 'next/link';
 
 interface ConnectionCardProps {
   user: users;
   onConnect: (userId: string) => void;
-  onIgnore: (userId: string) => void;
 }
 
-export function ConnectionCard({ user, onConnect, onIgnore }: ConnectionCardProps) {
+export function ConnectionCard({ user, onConnect }: ConnectionCardProps) {
+  const handleConnectClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation when clicking connect button
+    onConnect(user._id);
+  };
+
   return (
-    <Link href={`/profile/${user._id}`} className="block">
+    <Link 
+      href={`/user/AuthenticatedUser/ProfileDynamicRouting/${user._id}`} 
+      className="block transition-opacity hover:opacity-95"
+      prefetch={true}
+    >
       <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer group">
         {/* Banner Image */}
         <div className="h-24 bg-gray-100 relative">
@@ -61,26 +69,12 @@ export function ConnectionCard({ user, onConnect, onIgnore }: ConnectionCardProp
               <p className="text-sm text-gray-500 mb-1">{user.profile.location}</p>
             )}
 
-            {/* {user.profile.location && (
-              <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                {user.profile.location}
-              </p>
-            )} */}
-
-            {/* <p className="text-sm text-gray-400 mb-3">
-              {user.mutualConnections} mutual connections
-            </p> */}
-
             {/* Action Buttons */}
             <div className="flex gap-2">
               <Button 
                 variant="default" 
                 size="sm"
-                onClick={(e) => {
-                  e.preventDefault(); // Prevent link navigation
-                  console.log(user._id)
-                  onConnect(user._id);
-                }}
+                onClick={handleConnectClick}
                 className="flex items-center gap-1 flex-1"
               >
                 <UserPlus className="h-4 w-4" />
@@ -89,14 +83,10 @@ export function ConnectionCard({ user, onConnect, onIgnore }: ConnectionCardProp
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={(e) => {
-                  e.preventDefault(); // Prevent link navigation
-                  onIgnore(user._id);
-                }}
                 className="flex items-center gap-1 flex-1"
               >
-                <UserX className="h-4 w-4" />
-                Ignore
+                <User className="h-4 w-4" />
+                View Profile
               </Button>
             </div>
           </div>

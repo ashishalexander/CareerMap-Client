@@ -13,6 +13,8 @@ import { User, ConnectionRequest } from './types/network';
 import { useAppDispatch, useAppSelector, RootState } from "../../../store/store";
 import { SuggestionsResponse } from './types/network';
 import { FetchRequestResponse } from './types/network';
+import { useRateLimit } from './hooks/useRateLimit';
+import { toast } from 'sonner';
 
 
 
@@ -50,13 +52,38 @@ export default function NetworkPageClient() {
     initialPageParam: 1,
   });
 
-  // Connect mutation
+  const rateLimiter = useRateLimit(1);
+
   const connectMutation = useMutation({
-    mutationFn: (RequserId: string) => api.post<ApiResponse<void>>(`/api/users/network/connect/${user?._id}`, { RequserId }),
+    mutationFn: async (RequserId: string) => {
+      if (!rateLimiter.checkAndIncrementLimit()) {
+        const timeUntilReset = rateLimiter.getTimeUntilReset();
+        const minutesUntilReset = Math.ceil(timeUntilReset / (60 * 1000));
+        throw new Error(
+          `You've reached your connection limit. Please try again in ${minutesUntilReset} minutes.`
+        );
+      }
+      
+      const response = await api.post<ApiResponse<void>>(`/api/users/network/connect/${user?._id}`, { RequserId });
+      return response;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['suggestions'] });
+      const remaining = rateLimiter.getRemainingRequests();
+      toast("Connection request sent successfully", {
+        description: remaining === 0 
+          ? "You've reached your hourly connection limit."
+          : `You can send ${remaining} more connection${remaining === 1 ? '' : 's'} this hour.`
+      });
     },
+    onError: (error: Error) => {
+      console.error(error);
+      toast("Unable to send connection request", {
+        description: error.message
+      });
+    }
   });
+
 
   // Handle request mutation
   const requestMutation = useMutation({
@@ -99,7 +126,6 @@ export default function NetworkPageClient() {
               key={suggestion._id}
               user={suggestion}
               onConnect={(parameter) => connectMutation.mutate(parameter || '')}
-              onIgnore={() => {}} // Implement ignore logic
             />
           ))
         )}
