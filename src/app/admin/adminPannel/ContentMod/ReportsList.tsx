@@ -65,6 +65,7 @@ export const ReportsList: React.FC = () => {
       });
       setReports(response.data.data);
     } catch (error) {
+      console.error(error)
       toast.error('Failed to fetch reports');
     }
   }, [filters]);
@@ -85,6 +86,7 @@ export const ReportsList: React.FC = () => {
       await fetchReports();
       toast.success(`Post ${newIsDeletedStatus ? 'hidden' : 'restored'} successfully`);
     } catch (error) {
+      console.error(error)
       toast.error('Failed to update post visibility');
     }
   };
@@ -99,6 +101,7 @@ export const ReportsList: React.FC = () => {
       await fetchReports();
       toast.success('Report ignored successfully');
     } catch (error) {
+      console.error(error)
       toast.error('Failed to ignore report');
     }
   };

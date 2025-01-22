@@ -17,7 +17,7 @@ export default function UnauthorizedPage() {
         </p>
         <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg">
           <p className="text-blue-800 text-sm">
-            Need help? Contact your organization's admin or 
+            Need help? Contact your organization&apos;s admin or 
             CareerMap support to request access.
           </p>
         </div>

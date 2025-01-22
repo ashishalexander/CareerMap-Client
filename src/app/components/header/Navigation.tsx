@@ -37,7 +37,7 @@ export const Navigation = () => {
     { icon: Home, text: 'Home', href: '/user/AuthenticatedUser/Home' },
     { icon: Users, text: 'Network', href: '/user/AuthenticatedUser/Network' },
     { icon: Briefcase, text: 'Jobs', href: '/user/AuthenticatedUser/Jobs' },
-    { icon: MessageSquare, text: 'Messages', href: '/messages' },
+    { icon: MessageSquare, text: 'Messages', href: '/user/AuthenticatedUser/Messaging' },
     {
       icon: Bell,
       text: 'Notifications',
