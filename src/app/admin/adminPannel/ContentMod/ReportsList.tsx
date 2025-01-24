@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from '@/components/ui/badge';
 
 interface MediaItem {
   type: string;
@@ -42,6 +43,13 @@ interface Report {
   adminResponse?: string;
 }
 
+interface ConsolidatedReport {
+  postId: Post;
+  reports: Report[];
+  totalReports: number;
+  uniqueReasons: string[];
+}
+
 interface Filters {
   status: string;
   page: number;
@@ -51,7 +59,7 @@ interface Filters {
 type StatusType = 'all' | 'pending' | 'reviewed' | 'ignored' | 'action_taken';
 
 export const ReportsList: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([]);
+  const [consolidatedReports, setConsolidatedReports] = useState<ConsolidatedReport[]>([]);
   const [filters, setFilters] = useState<Filters>({
     status: 'all',
     page: 1,
@@ -63,7 +71,33 @@ export const ReportsList: React.FC = () => {
       const response = await api.get<{ data: Report[] }>('api/admin/reports', {
         params: filters
       });
-      setReports(response.data.data);
+      
+      // Consolidate reports by postId
+      const consolidatedMap = new Map<string, ConsolidatedReport>();
+      
+      response.data.data.forEach(report => {
+        const postId = report.postId._id;
+        
+        if (!consolidatedMap.has(postId)) {
+          consolidatedMap.set(postId, {
+            postId: report.postId,
+            reports: [report],
+            totalReports: 1,
+            uniqueReasons: [report.reason]
+          });
+        } else {
+          const existingReport = consolidatedMap.get(postId)!;
+          existingReport.reports.push(report);
+          existingReport.totalReports++;
+          
+          // Add unique reasons
+          if (!existingReport.uniqueReasons.includes(report.reason)) {
+            existingReport.uniqueReasons.push(report.reason);
+          }
+        }
+      });
+
+      setConsolidatedReports(Array.from(consolidatedMap.values()));
     } catch (error) {
       console.error(error)
       toast.error('Failed to fetch reports');
@@ -74,15 +108,21 @@ export const ReportsList: React.FC = () => {
     fetchReports();
   }, [filters, fetchReports]);
 
-  const handleToggleVisibility = async (reportId: string, currentPost: Post): Promise<void> => {
+  const handleToggleVisibility = async (postId: string, currentPost: Post): Promise<void> => {
     try {
       const newIsDeletedStatus = !currentPost.isDeleted;
       const response = newIsDeletedStatus ? 'Post hidden from public view' : 'Post restored and made visible to users';
-      await api.post(`api/admin/reports/${reportId}/action`, {
+      
+      // Use the first report's ID for the action
+      const firstReportId = consolidatedReports
+        .find(cr => cr.postId._id === postId)?.reports[0]._id;
+      
+      await api.post(`api/admin/reports/${firstReportId}/action`, {
         action: 'TOGGLE_POST',
         response,
         isDeleted: newIsDeletedStatus
       });
+      
       await fetchReports();
       toast.success(`Post ${newIsDeletedStatus ? 'hidden' : 'restored'} successfully`);
     } catch (error) {
@@ -91,13 +131,18 @@ export const ReportsList: React.FC = () => {
     }
   };
 
-  const handleReportAction = async (reportId: string, currentPost: Post): Promise<void> => {
+  const handleReportAction = async (postId: string, currentPost: Post): Promise<void> => {
     try {
-      await api.post(`api/admin/reports/${reportId}/action`, {
+      // Use the first report's ID for the action
+      const firstReportId = consolidatedReports
+        .find(cr => cr.postId._id === postId)?.reports[0]._id;
+      
+      await api.post(`api/admin/reports/${firstReportId}/action`, {
         action: 'IGNORE',
         response: 'No violation found - report ignored',
         isDeleted: currentPost.isDeleted
       });
+      
       await fetchReports();
       toast.success('Report ignored successfully');
     } catch (error) {
@@ -130,63 +175,69 @@ export const ReportsList: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {reports.map((report) => (
-            <div key={report._id} className="border rounded-lg p-4 space-y-3">
+          {consolidatedReports.map((consolidatedReport) => (
+            <div key={consolidatedReport.postId._id} className="border rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold">Report #{report._id}</h3>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={report.reportedBy.profile.profilePicture} />
-                    </Avatar>
-                    <span className="text-sm text-gray-600">{report.reportedBy.email}</span>
+                <div className="flex-grow">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">Reported Content</h3>
+                    <div className="flex items-center">
+                      <Badge 
+                        variant="destructive" 
+                        className="bg-red-100 text-red-700 px-3 py-1 rounded-full"
+                      >
+                        <span className="font-bold mr-1">{consolidatedReport.totalReports}</span>
+                        Report{consolidatedReport.totalReports !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
                   </div>
-                  <p className="text-gray-600 mt-2">{report.reason}</p>
-                  {report.details && (
-                    <p className="text-sm text-gray-500 mt-1">{report.details}</p>
-                  )}
+                  
+                  <p className={consolidatedReport.postId.isDeleted ? "text-gray-400 mt-2" : "mt-2"}>
+                    {consolidatedReport.postId.text}
+                  </p>
                 </div>
                 <span className="text-sm text-gray-400">
-                  {format(new Date(report.timestamp), 'PPp')}
+                  {format(new Date(consolidatedReport.reports[0].timestamp), 'PPp')}
                 </span>
               </div>
               
-              <div className="bg-gray-50 p-3 rounded">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium">Reported Content</h4>
-                  {report.postId.isDeleted && (
-                    <span className="text-sm text-red-500 font-medium">Currently Hidden</span>
-                  )}
+              {consolidatedReport.postId.media && consolidatedReport.postId.media.length > 0 && (
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {consolidatedReport.postId.media.map((mediaItem) => (
+                    <img 
+                      key={mediaItem._id}
+                      src={mediaItem.url} 
+                      alt={`${mediaItem.type} content`}
+                      className={`max-h-40 rounded object-cover w-full ${consolidatedReport.postId.isDeleted ? "opacity-50" : ""}`}
+                    />
+                  ))}
                 </div>
-                <p className={report.postId.isDeleted ? "text-gray-400" : ""}>
-                  {report.postId.text}
-                </p>
-                {report.postId.media && report.postId.media.length > 0 && (
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {report.postId.media.map((mediaItem) => (
-                      <img 
-                        key={mediaItem._id}
-                        src={mediaItem.url} 
-                        alt={`${mediaItem.type} content`}
-                        className={`max-h-40 rounded object-cover w-full ${report.postId.isDeleted ? "opacity-50" : ""}`}
-                      />
-                    ))}
-                  </div>
-                )}
+              )}
+
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium mb-2">Report Reasons</h4>
+                <div className="space-y-2">
+                  {consolidatedReport.uniqueReasons.map((reason, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <span className="text-sm text-gray-600">{reason}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="flex gap-2 mt-3">
                 <Button
-                  variant={report.postId.isDeleted ? "outline" : "destructive"}
-                  onClick={() => handleToggleVisibility(report._id, report.postId)}
+                  variant={consolidatedReport.postId.isDeleted ? "outline" : "destructive"}
+                  onClick={() => handleToggleVisibility(consolidatedReport.postId._id, consolidatedReport.postId)}
                 >
-                  {report.postId.isDeleted ? 'Restore Post' : 'Hide Post'}
+                  {consolidatedReport.postId.isDeleted ? 'Restore Post' : 'Hide Post'}
                 </Button>
                 
-                {report.status === 'pending' && (
+                {consolidatedReport.reports.some(r => r.status === 'pending') && (
                   <Button
                     variant="ghost"
-                    onClick={() => handleReportAction(report._id, report.postId)}
+                    onClick={() => handleReportAction(consolidatedReport.postId._id, consolidatedReport.postId)}
                   >
                     Ignore Report
                   </Button>
@@ -194,12 +245,26 @@ export const ReportsList: React.FC = () => {
               </div>
 
               <div className="mt-3 text-sm text-gray-500">
-                <p><span className="font-medium">Status:</span> {report.status}</p>
-                {report.adminResponse && (
-                  <p className="mt-1">
-                    <span className="font-medium">Admin Response:</span> {report.adminResponse}
-                  </p>
-                )}
+                <p>
+                  <span className="font-medium">Reported By:</span>{' '}
+                  <span className="flex items-center gap-2">
+                    {consolidatedReport.reports.slice(0, 3).map((report) => (
+                       <div key={report.reportedBy._id} className="flex items-center gap-2">
+                       <Avatar className="h-6 w-6">
+                         <AvatarImage src={report.reportedBy.profile.profilePicture} />
+                       </Avatar>
+                       <div>
+                         <span className="font-medium">{report.reportedBy.email.split('@')[0]}</span>
+                       </div>
+                     </div>
+                    ))}
+                    {consolidatedReport.reports.length > 3 && (
+                      <span className="text-gray-500">
+                        +{consolidatedReport.reports.length - 3} more
+                      </span>
+                    )}
+                  </span>
+                </p>
               </div>
             </div>
           ))}
