@@ -51,8 +51,8 @@ const NotificationsPage = () => {
       case 'comment':
         message = 'commented on your post';
         break;
-      case 'follow':
-        message = 'started following you';
+      case 'connection_request':
+        message = 'sent you a connection request';
         break;
       default:
         message = notification.message;
@@ -132,7 +132,7 @@ const NotificationsPage = () => {
             <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 font-medium">No notifications yet</p>
             <p className="text-sm text-gray-400 mt-1">
-              We'll notify you when something new arrives
+              We&apos;ll notify you when something new arrives
             </p>
           </div>
         )}

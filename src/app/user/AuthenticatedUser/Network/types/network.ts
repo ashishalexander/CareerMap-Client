@@ -34,6 +34,7 @@ export interface users {
   firstName: string;
   lastName: string;
   profile: userprofile;
+  connectionStatus: 'none' | 'pending' | 'connected';
 }
 
 export interface SuggestionsResponse {
