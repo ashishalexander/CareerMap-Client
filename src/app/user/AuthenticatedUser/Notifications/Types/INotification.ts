@@ -30,7 +30,7 @@ export type CombinedNotification = {
 
 export interface IUserNotification extends Document {
     _id: string;
-    type: "like" | "comment" | "follow" | "message" | "general";
+    type: "like" | "comment" | "connection" | "message" | "general";
     senderId: string;
     receiverId: string;
     postId: string;

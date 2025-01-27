@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { UserPlus, Users, User } from 'lucide-react';
+import { UserPlus, Users, CheckCircle } from 'lucide-react';
 import { users } from '../types/network';
 import Link from 'next/link';
 
@@ -69,23 +69,35 @@ export function ConnectionCard({ user, onConnect }: ConnectionCardProps) {
               <p className="text-sm text-gray-500 mb-1">{user.profile.location}</p>
             )}
 
-            {/* Action Buttons */}
+            {/* Action Buttons with Connection Status */}
             <div className="flex gap-2">
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={handleConnectClick}
-                className="flex items-center gap-1 flex-1"
-              >
-                <UserPlus className="h-4 w-4" />
-                Connect
-              </Button>
+              {user.connectionStatus === 'pending' ? (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center gap-1 flex-1 cursor-default"
+                  disabled
+                >
+                  <CheckCircle className="h-4 w-4 text-yellow-700 animate-pulse" />
+                  Requested
+                </Button>
+              ) : (
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={handleConnectClick}
+                  className="flex items-center gap-1 flex-1"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Connect
+                </Button>
+              )}
               <Button 
                 variant="ghost" 
                 size="sm"
                 className="flex items-center gap-1 flex-1"
               >
-                <User className="h-4 w-4" />
+                <Users className="h-4 w-4" />
                 View Profile
               </Button>
             </div>
