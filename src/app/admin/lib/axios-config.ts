@@ -57,6 +57,7 @@ async function refreshAccessToken() {
     const response = await apiClient.post('/auth/refresh-token', { refreshToken });
     return response.data.accessToken;
   } catch (error) {
+    console.log(error)
     return null;
   }
 }
