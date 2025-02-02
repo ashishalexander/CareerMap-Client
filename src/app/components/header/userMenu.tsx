@@ -63,9 +63,12 @@ export const UserMenu = () => {
         </DropdownMenuItem>
         {isRecruiter && (
           <DropdownMenuItem asChild>
-            <Link href="/user/AuthenticatedUser/JobApplicationReview">Applications Received</Link>
+            <Link href="/user/AuthenticatedUser/JobApplicationReview">Applications Received</Link>  
           </DropdownMenuItem>
         )}
+         <DropdownMenuItem asChild>
+          <Link href="/user/AuthenticatedUser/SubscriptionDash">Subscription Details</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings">Settings</Link>
         </DropdownMenuItem>
