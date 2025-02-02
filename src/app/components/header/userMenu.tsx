@@ -3,7 +3,6 @@ import React,{useEffect,} from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/store/store';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { signOut } from '../../store/slices/authSlice';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -42,6 +41,7 @@ export const UserMenu = () => {
   if (!user) {
     return null; 
   }
+  const isRecruiter = user.role === 'recruiter'
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center">
@@ -61,6 +61,11 @@ export const UserMenu = () => {
         <DropdownMenuItem asChild>
           <Link href="/user/AuthenticatedUser/Profile">View Profile</Link>
         </DropdownMenuItem>
+        {isRecruiter && (
+          <DropdownMenuItem asChild>
+            <Link href="/user/AuthenticatedUser/JobApplicationReview">Applications Received</Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/settings">Settings</Link>
         </DropdownMenuItem>
