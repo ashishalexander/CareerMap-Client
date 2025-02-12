@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +42,7 @@ const AdminSignIn: React.FC = () => {
     try {
       // Dispatch admin login action
       await dispatch(adminLogin(data)).unwrap();
-      router.push("/admin/adminPannel/dashboard")
+      router.push("/admin/dashboard")
     } catch (error) {
       console.error("Sign-in error:", error);
     }

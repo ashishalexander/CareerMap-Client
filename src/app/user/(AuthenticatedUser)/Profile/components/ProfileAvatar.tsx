@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera } from 'lucide-react';
+import Image from "next/image";
 
 interface ProfileAvatarProps {
   image?: string;
@@ -23,9 +24,11 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
   return (
     <div className="absolute -bottom-16 left-8">
       <div className="relative">
-        <img
+        <Image
           src={image || "https://via.placeholder.com/150x150"}
           alt="profile pic"
+          width={ 120}
+          height={120}
           className="w-32 h-32 rounded-full border-4 border-white bg-white object-cover"
         />
         {isOwnProfile && (

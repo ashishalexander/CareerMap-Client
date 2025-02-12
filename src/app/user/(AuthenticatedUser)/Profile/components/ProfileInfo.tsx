@@ -13,21 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { z } from 'zod';
-
-// User Interface Definition
-export interface Iuser {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  profile?: {
-    headline?: string;
-    location?: string;
-    company?: string;
-    website?: string;
-    connections?: number;
-  };
-}
+import { Iuser } from '@/const/Iuser';
 
 // Form Validation Schema
 const ProfileSchema = z.object({
@@ -54,6 +40,7 @@ export const ProfileInfo: FC<ProfileInfoProps> = ({
   isOwnProfile,
   onUpdate
 }) => {
+  console.log(user)
   // Initial Form State
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -331,9 +318,9 @@ export const ProfileInfo: FC<ProfileInfoProps> = ({
         )}
       </div>
 
-      {user.profile?.connections !== undefined && (
+      {user.Network.connections && (
         <div className="mt-3 text-gray-600">
-          <span className="font-medium">{user.profile?.connections.toLocaleString()}</span>
+          <span className="font-medium">{user.Network.connections.length}</span>
           {' connections'}
         </div>
       )}

@@ -53,6 +53,15 @@ interface ExperienceDisplayProps {
   isOwnProfile: boolean;
 }
 
+const formatDate = (date: Date | null | undefined) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+};
+
+
 const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
   isOwnProfile,
   experiences = []
@@ -72,14 +81,7 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const formatDate = (date: Date | null | undefined) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
-  };
-
+ 
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.title?.trim()) errors.title = "Title is required";

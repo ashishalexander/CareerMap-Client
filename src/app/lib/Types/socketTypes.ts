@@ -1,5 +1,5 @@
 // socketTypes.ts
-import { INotification } from "@/app/user/AuthenticatedUser/Notifications/Types/INotification";
+import { INotification } from "@/app/user/(AuthenticatedUser)/Notifications/Types/INotification";
 import type { Socket } from "socket.io-client";
 
 export interface ServerToClientEvents {

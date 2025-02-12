@@ -2,7 +2,8 @@ import { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState,useRef } from 'react';
+import { useRef } from 'react';
+import Image from "next/image";
 interface ProfileBannerProps {
   bannerUrl?: string | null;
   isOwnProfile: boolean;
@@ -37,9 +38,11 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   return (
     <div className="relative w-full h-60">
       {bannerUrl ? (
-        <img
+        <Image
           src={bannerUrl}
           alt="Profile Banner"
+          width={894.400}
+          height={240}
           className="w-full h-full object-cover rounded-t-lg"
         />
       ) : (
@@ -83,12 +86,5 @@ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       )}
 
     </div>
-  );
-};
-
-// Loading skeleton for the banner
-export const ProfileBannerSkeleton: FC = () => {
-  return (
-    <Skeleton className="w-full h-60 rounded-t-lg" />
   );
 };

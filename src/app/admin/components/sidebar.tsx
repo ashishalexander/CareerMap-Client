@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Home, Users, Settings, LogOut, Bell, Shield } from 'lucide-react';
+import { Home, Users, Settings, LogOut, Bell, Shield,CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppDispatch } from '../../store/store'; // Import useAppDispatch
@@ -11,27 +11,32 @@ const sidebarItems = [
   { 
     icon: <Home size={20} />, 
     label: 'Dashboard', 
-    route: '/admin/adminPannel/dashboard'
+    route: '/admin/dashboard'
   },
   { 
     icon: <Users size={20} />, 
     label: 'User Management', 
-    route: '/admin/adminPannel/userManagement'
+    route: '/admin/userManagement'
   },
   { 
     icon: <Settings size={20} />, 
     label: 'Recruiter Management', 
-    route: '/admin/adminPannel/recruiterManagement'
+    route: '/admin/recruiterManagement'
   },
   { 
     icon: <Bell size={20} />, 
     label: 'Notifications', 
-    route: '/admin/adminPannel/Notifications'
+    route: '/admin/Notifications'
   },
   { 
     icon: <Shield size={20} />, // Added Shield icon for content moderation
     label: 'Content Moderation', 
-    route: '/admin/adminPannel/ContentMod'
+    route: '/admin/ContentMod'
+  },
+  { 
+    icon: <CreditCard size={20} />,
+    label: 'Subscriptions', 
+    route: '/admin/subscriptionManagement'
   },
   { 
     icon: <LogOut size={20} />, 

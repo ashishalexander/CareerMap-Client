@@ -1,32 +1,47 @@
 "use client";
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import { useAppSelector, useAppDispatch } from '../../../store/store'; // Import custom hooks
 import { ProfileBanner } from './components/ProfileBanner';
 import { ProfileAvatar } from './components/ProfileAvatar';
 import { ProfileInfo } from './components/ProfileInfo';
-import { ProfileActions } from './components/ProfileActions';
 import { AboutSection } from './components/AboutSession';
-import { ProfileSkeleton } from './components/ProfileLoadSkelt';
+import { ActivitySkeleton, JobPostingSkeleton, ProfileSkeleton } from './components/ProfileLoadSkelt';
 import type { RootState } from '../../../store/store';
 import type { Iuser } from '../../../../const/Iuser';
-import EducationProfileComponent from './components/Education'
-import ExperienceProfileComponent from './components/Experience';
-import ProjectProfileComponent from './components/Project'
 import api from '../../../lib/axios-config'
 import { updateUserBannerUrl,updateUserProfileAbout,updateUserProfileInfo,updateUserProfilePicture } from '@/app/store/slices/authSlice';
-import { current } from '@reduxjs/toolkit';
-import ActivityProfileComponent from './components/Activity'
-import RecruiterJobComponent from './components/RecuriterJob';
+import React from 'react';
+import EducationProfileComponent from './components/Education';
+import ExperienceProfileComponent from './components/Experience';
+import dynamic from 'next/dynamic';
+
 interface ProfileSectionProps {
   userId?: string | null;
 }
 
+const ActivityProfileComponent = dynamic(
+  () => import('./components/Activity'),
+  {
+    loading: () => <ActivitySkeleton />,
+    ssr: false
+  }
+);
+
+const RecruiterJobComponent = dynamic(
+  () => import('./components/RecuriterJob'),
+  {
+    loading: () => <JobPostingSkeleton />,
+    ssr: false
+  }
+);
+
 const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
   const dispatch = useAppDispatch(); // Use custom useAppDispatch hook
   const currentUser = useAppSelector((state: RootState) => state.auth.user); // Accessing profile from profileSlice
-  // const[loading,setLoading] =useState(true)
   const isOwnProfile: boolean = userId === null || (currentUser !== null && userId === currentUser._id);
-
+  if (!currentUser) {
+    return <ProfileSkeleton />;
+  }
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
       const response = await api.post(`/api/users/profile/info/${currentUser?._id}`,updateData)
@@ -89,18 +104,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
     }
   };
 
-  
-  // if (loading) {
-  //   return <ProfileSkeleton />;
-  // }
-
-  if (!currentUser) {
-    return (
-      <div className="bg-white shadow rounded-lg max-w-4xl mx-auto p-8 text-center text-gray-600">
-        Profile not found
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="bg-[#F3F2EF] min-h-screen py-8">
@@ -127,22 +131,11 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
               isOwnProfile={isOwnProfile}
               onUpdate={handleProfileUpdate}
             />
-            <ProfileActions 
-              isOwnProfile={isOwnProfile}
-              onShare={() => {
-                // Implement share functionality
-              }}
-              onConnect={() => {
-                // Implement connect functionality
-              }}
-              onMessage={() => {
-                // Implement message functionality
-              }}
-            />
           </div>
 
         </div>
       </div>
+      
 
        {/* About Section */}
        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
@@ -152,32 +145,28 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
             onUpdate={(about) => handleProfileAbout(about)} // Update about section
           />      
         </div>
+       
 
       {/* Education Section */}
-      <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <EducationProfileComponent isOwnProfile={isOwnProfile} educations={currentUser.profile.Education} />
-      </div>
+        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+          <EducationProfileComponent isOwnProfile={isOwnProfile} educations={currentUser.profile.Education} />
+        </div>
 
        {/* Experience Section */}
-       <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <ExperienceProfileComponent isOwnProfile={isOwnProfile} experiences={currentUser.profile.Experience} />
-      </div>
-
-       {/* Project Section */}
-       {/* <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <ProjectProfileComponent isOwnProfile={isOwnProfile} />
-      </div> */}
+        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+          <ExperienceProfileComponent isOwnProfile={isOwnProfile} experiences={currentUser.profile.Experience} />
+        </div>
 
       {/* Activity Section */}
-      <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-        <ActivityProfileComponent isOwnProfile={isOwnProfile} />
-      </div>
+        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+          <ActivityProfileComponent isOwnProfile={isOwnProfile} />
+        </div>
 
       {/* Recruiter Job Section - Conditionally Rendered */}
       {currentUser?.role === 'recruiter' && (
-        <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
-          <RecruiterJobComponent isOwnProfile={isOwnProfile} />
-        </div>
+          <div className="bg-white shadow rounded-lg max-w-4xl mx-auto mt-8 p-8 border border-[#E5E5E5]">
+            <RecruiterJobComponent isOwnProfile={isOwnProfile} />
+          </div>
       )}
     </div>
 

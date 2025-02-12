@@ -2,14 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAppSelector, RootState } from '../../../../store/store';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { ThumbsUp, MessageCircle, Send, Trash2 } from 'lucide-react';
 import api from '@/app/lib/axios-config';
 import { IPost } from "../../../../../const/Ipost";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import Image from "next/image";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface ActivityProfileComponentProps {
   isOwnProfile: boolean;
@@ -38,13 +39,13 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
     if (user?._id) {
       fetchUserPosts();
     }
-  }, [fetchUserPosts]);
+  }, [fetchUserPosts,user?._id]);
 
   const handleDeletePost = async () => {
     if (!postToDelete) return;
 
     try {
-      await api.delete(`/api/posts/delete/${postToDelete}`);
+      await api.delete(`/api/users/posts/delete/${postToDelete}`);
       
       // Remove the deleted post from the list
       setPosts(prevPosts => prevPosts.filter(post => post._id !== postToDelete));
@@ -157,7 +158,7 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
             <div className="mt-3 max-h-40 overflow-hidden">
               {post.media.map((mediaItem, index) => (
                 mediaItem.type === 'image' && (
-                  <img 
+                  <img
                     key={index}
                     src={mediaItem.url} 
                     alt={mediaItem.description}
@@ -199,9 +200,11 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
         {/* Media Section */}
         <div className="w-1/2 bg-gray-100 flex items-center justify-center">
           {selectedPost.media && selectedPost.media.length > 0 && (
-            <img 
+            <Image
               src={selectedPost.media[0].url} 
               alt={selectedPost.media[0].description}
+              width={499.200}
+              height={332.800}
               className="max-h-full max-w-full object-contain"
             />
           )}

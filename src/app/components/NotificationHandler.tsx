@@ -1,11 +1,10 @@
 'use client'
-import React, { useEffect } from 'react';
-import { useSocket } from '../user/AuthenticatedUser/providers';
+import  { useEffect } from 'react';
+import { useSocket } from '../user/(AuthenticatedUser)/providers';
 import { useAppDispatch } from '../store/store';
 import { usePathname } from 'next/navigation';
-import { toast } from 'sonner';
-import { setNewNotification, clearNewNotificationIndicator } from '../store/slices/notificationSlice';
-import { INotification } from '../user/AuthenticatedUser/Notifications/Types/INotification';
+import { setNewNotification } from '../store/slices/notificationSlice';
+import { INotification } from '../user/(AuthenticatedUser)/Notifications/Types/INotification';
 
 const NotificationHandler = () => {
   const socket = useSocket();
@@ -16,15 +15,11 @@ const NotificationHandler = () => {
     if (!socket) return;
 
     const handleNotification = (notification: INotification) => {
-      console.log(pathname)
       // Only set new notification indicator if we're not on the notifications page
-      if (pathname !== '/user/AuthenticatedUser/Notifications') {
+      if (pathname !== '/user/Notifications') {
         dispatch(setNewNotification());
       }
       
-      // toast(notification.title, {
-      //   description: notification.message,
-      // });
     };
 
     // Add event listeners

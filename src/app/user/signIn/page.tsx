@@ -1,9 +1,7 @@
 "use client";
 import React, { useState,useEffect} from "react";
-import { Mail, Lock, ArrowRight } from "lucide-react";
-import { getSession, signIn,signOut,useSession } from 'next-auth/react';
+import { Mail, Lock, ArrowRight, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useDispatch,useSelector } from "react-redux";
 import { emailSignIn,googleSignIn, resetError } from "@/app/store/slices/authSlice";
 import { useAppDispatch,useAppSelector } from "@/app/store/store";
 
@@ -30,7 +28,7 @@ const SignIn: React.FC = () => {
 
     const accessToken = sessionStorage.getItem('accessToken')
     if(user&&accessToken){
-      router.push('/user/AuthenticatedUser/Home')
+      router.push('/user/Home')
     }
   },[user])
 
@@ -131,10 +129,19 @@ const SignIn: React.FC = () => {
                 <div>
                   <button
                     type="submit"
-                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+                    disabled={loading}
+                    className={`group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out ${
+                      loading ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
                   >
-                    Sign in
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    {loading ? (
+                      <Loader className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        Sign in
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
                 </div>
 
@@ -180,7 +187,7 @@ const SignIn: React.FC = () => {
               </form>
 
               <p className="mt-8 text-center text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <a
                   href="/user/signup"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
@@ -229,8 +236,8 @@ const SignIn: React.FC = () => {
               </div>
               <div className="mt-8">
                 <p className="italic text-white opacity-80">
-                  "CareerMap has revolutionized how I approach my job search.
-                  The personalized recommendations are spot-on!" - Michael Chen,
+                  &quot;CareerMap has revolutionized how I approach my job search.
+                  The personalized recommendations are spot-on!&quot; - Michael Chen,
                   Product Manager
                 </p>
               </div>
