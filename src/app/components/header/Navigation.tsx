@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Home, Users, Briefcase, MessageSquare, Bell } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAppSelector } from '../../store/store';
-import { NotificationIcon } from '../../user/AuthenticatedUser/Notifications/NotificationIcon';
+import { NotificationIcon } from '../../user/(AuthenticatedUser)/Notifications/NotificationIcon';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -34,14 +34,14 @@ export const Navigation = () => {
   const hasNewNotifications = useAppSelector((state) => state.notificat.hasNewNotifications);
 
   const navItems = [
-    { icon: Home, text: 'Home', href: '/user/AuthenticatedUser/Home' },
-    { icon: Users, text: 'Network', href: '/user/AuthenticatedUser/Network' },
-    { icon: Briefcase, text: 'Jobs', href: '/user/AuthenticatedUser/Jobs' },
-    { icon: MessageSquare, text: 'Messages', href: '/user/AuthenticatedUser/Messaging' },
+    { icon: Home, text: 'Home', href: '/user/Home' },
+    { icon: Users, text: 'Network', href: '/user/Network' },
+    { icon: Briefcase, text: 'Jobs', href: '/user/Jobs' },
+    { icon: MessageSquare, text: 'Messages', href: '/user/Messaging' },
     {
       icon: Bell,
       text: 'Notifications',
-      href: '/user/AuthenticatedUser/Notifications',
+      href: '/user/Notifications',
       hasNewNotifications,
     },
   ];

@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  Dialog, 
-  DialogTrigger,
+  Dialog,
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
@@ -18,7 +17,7 @@ import { useForm, Controller } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import api from '@/app/lib/axios-config';
-import { PencilIcon, PlusCircle, Trash2, Briefcase, X, Plus } from 'lucide-react';
+import { PencilIcon, PlusCircle, Trash2,  X, Plus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { RootState, useAppSelector } from '@/app/store/store';
 
@@ -112,7 +111,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [isOwnProfile]);
+  }, [user?._id]);
 
   // Fetch job posts on component mount
   useEffect(() => {
@@ -275,7 +274,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
         )}
       </div>
     </div>
-  ), [handleStartEdit, handleDeleteJobPost, isOwnProfile]);
+  ), [handleStartEdit, isOwnProfile]);
 
   return (
     <Card>

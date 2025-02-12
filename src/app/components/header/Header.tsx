@@ -25,14 +25,14 @@ const Header = () => {
           <Navigation />
           <div className="flex items-center justify-end flex-1 gap-2">
             {isPremium ? (
-              <Link href="/user/AuthenticatedUser/Premium">
+              <Link href="/user/Premium">
                 <div className="flex items-center gap-1 bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 px-3 py-1.5 rounded-full text-sm font-medium hover:from-amber-300 hover:to-yellow-500 transition-colors cursor-pointer">
                   <Crown size={16} />
                   <span>{planType}</span>
                 </div>
               </Link>
             ) : (
-              <Link href="/user/AuthenticatedUser/Premium">
+              <Link href="/user/Premium">
                 <Button 
                   variant="outline"
                   className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-600 border-blue-200"

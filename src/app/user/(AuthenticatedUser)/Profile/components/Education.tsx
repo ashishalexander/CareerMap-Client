@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePickerDemo } from '@/components/ui/datePicker';
-import { FileDiff, PencilIcon, PlusCircle } from 'lucide-react';
+import { PencilIcon, PlusCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -142,7 +142,7 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
     } catch (error) {
       console.error('Failed to save education:', error);
     }
-  }, [editingIndex, reset, dispatch]);
+  }, [editingIndex, reset, dispatch,user?._id]);
 
   const handleDeleteEducation = async (index: string) => {
     try {
@@ -215,7 +215,7 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
         )}
       </div>
     </div>
-  ), [handleStartEdit, isOwnProfile]);
+  ), [handleStartEdit,isOwnProfile]);
 
   const handleSkillsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const skillsArray = e.target.value

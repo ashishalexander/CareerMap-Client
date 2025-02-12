@@ -3,7 +3,6 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { signIn, getSession } from 'next-auth/react';
 import { Iuser } from '@/const/Iuser';
-import { access } from 'fs';
 
 interface AuthState {
   user: Iuser | null;
@@ -56,7 +55,7 @@ export const googleSignIn = createAsyncThunk<
     try {
       const result = await signIn('google', { 
         redirect: false,
-        callbackUrl: '/user/AuthenticatedUser/Home'
+        callbackUrl: '/user/Home'
       });
 
       if (result?.error) {

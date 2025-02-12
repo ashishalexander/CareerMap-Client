@@ -27,7 +27,6 @@ export const useNotification = () => {
   const [notifications, setNotifications] = useState<CombinedNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const notificationState = useAppSelector((state) => state.notificat);
   const user = useAppSelector((state) => state.auth.user);
 
   // Transform admin notification to combined format
@@ -102,7 +101,7 @@ export const useNotification = () => {
 
   // Clear notification indicator when on notifications page
   useEffect(() => {
-    if (pathname === '/user/AuthenticatedUser/Notifications') {
+    if (pathname === '/user/Notifications') {
       dispatch(clearNewNotificationIndicator());
     }
   }, [pathname, dispatch]);
