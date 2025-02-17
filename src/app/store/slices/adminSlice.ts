@@ -31,7 +31,10 @@ export const adminLogin = createAsyncThunk<
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/admin/signIn`,
         credentials,
-        { headers: { "Content-Type": "application/json" } }
+        {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" } 
+        }
       );
       return response.data; // Assumes response contains `admin` and `accessToken`
     } catch (error: any) {

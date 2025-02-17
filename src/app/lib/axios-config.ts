@@ -1,154 +1,106 @@
-  import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-  import {store} from '../store/store'
-  import { signOut } from '../store/slices/authSlice';
-  // import Router from 'next/router'
 
-  interface ApiErrorResponse {
-    message: string;
-    errors?: Record<string, string[]>;
-    [key: string]: any; 
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { store } from '../store/store';
+import { signOut } from '../store/slices/authSlice';
+
+interface ApiErrorResponse {
+  message: string;
+  errors?: Record<string, string[]>;
+  [key: string]: any;
+}
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public message: string,
+    public data?: ApiErrorResponse,
+  ) {
+    super(message);
+    this.name = 'ApiError';
   }
+}
 
-  // Create a custom error type
-  export class ApiError extends Error {
-    constructor(
-      public status: number,
-      public message: string,
-      public data?: ApiErrorResponse,
-    ) {
-      super(message);
-      this.name = 'ApiError';
+const apiClient: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+});
+
+// Request interceptor
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = sessionStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
   }
+);
 
-  // Create and configure the Axios instance
-  const apiClient: AxiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
-    timeout: 10000, // 10 seconds
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    withCredentials:true,
-  });
+const logout = async () => {
+  sessionStorage.removeItem('accessToken');
+  store.dispatch(signOut());
+  if (typeof window !== 'undefined') {
+    window.location.href = '/user/signIn';
+  }
+};
 
-  // Request interceptor
-  apiClient.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-      if (config.url ) {
-        const token = sessionStorage.getItem('accessToken');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      }
-      return config;
-    },
-    (error: AxiosError) => {
-      return Promise.reject(error);
+// Response interceptor
+apiClient.interceptors.response.use(
+  (response) => {
+    // Check if there's a new access token in the response headers
+    const newAccessToken = response.headers['new-access-token'];
+    if (newAccessToken) {
+      sessionStorage.setItem('accessToken', newAccessToken);
     }
-  );
+    return response;
+  },
+  async (error: AxiosError<ApiErrorResponse>) => {
+    if (error.response) {
+      const status = error.response.status;
+      const errorResponse = error.response.data as ApiErrorResponse;
+      const message = errorResponse?.message || 'An error occurred';
 
-  // Function to refresh the access token
-  const refreshAccessToken = async (): Promise<string | null> => {
-    try {
-      const response = await apiClient.post('/api/users/refresh-token');
-      const { accessToken } = response.data;
-      sessionStorage.setItem('accessToken', accessToken);
-      return accessToken;
-    } catch (error) {
-      console.error('Error refreshing access token:', error);
-      sessionStorage.removeItem('accessToken');
-      return null;
-    }
-  };
-
-  const redirectToUnauthorizedPage = async () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/Unauthorized'
-    } else {
-      console.error('Router.push() cannot be used on the server side');
-    }
-  };
-  
-  apiClient.interceptors.response.use(
-    (response) => response,
-    async (error: AxiosError<ApiErrorResponse>) => {
-      console.log(error);
-      if (error.response) {
-        const status = error.response.status;
-        const errorResponse = error.response.data;
-        const message = errorResponse?.message || 'An error occurred';
-  
-        switch (status) {
-          case 401: //No Token
-            logout();
-            return Promise.reject(new ApiError(status, 'Access token is missing. Please log in again.'));
-          case 403: // Invalid token
-            try {
-              const originalRequest = error.config; // Save the original request
-              if (originalRequest) {
-                const newAccessToken = await refreshAccessToken();
-                if (newAccessToken) {
-                  originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                  return apiClient(originalRequest); // Retry the original request
-                } else {
-                  // Token refresh failed, log out the user
-                  logout();
-                  return Promise.reject(new ApiError(0, 'Session expired. Please log in again.'));
-                }
-              } else {
-                // originalRequest is undefined, cannot retry
-                return Promise.reject(new ApiError(0, 'Original request is undefined.'));
-              }
-            } catch (refreshError:any) {
-              // Token refresh failed, log out the user
-              logout();
-              return Promise.reject(new ApiError(0, 'Session expired. Please log in again.', refreshError));
-            }
-          case 498:
-            await redirectToUnauthorizedPage();
-            return Promise.reject(new ApiError(status, 'Unauthorized access', errorResponse));
-          case 450: // Custom status for blocked users
-            logout()
-            return Promise.reject(new ApiError(status, 'Your account is blocked.', errorResponse));
-          case 404:
-          case 500:
-            return Promise.reject(new ApiError(status, message, errorResponse));
-        }
-      } else if (error.request) {
-        return Promise.reject(new ApiError(0, 'No response received'));
-      } else {
-        return Promise.reject(new ApiError(0, error.message || 'Request failed'));
+      switch (status) {
+        case 401:
+          await logout();
+          return Promise.reject(new ApiError(status, 'Session expired. Please login again.'));
+        case 498:
+          window.location.href = '/Unauthorized';
+          return Promise.reject(new ApiError(status, 'Unauthorized access', errorResponse));
+        case 450:
+          await logout();
+          return Promise.reject(new ApiError(status, 'Your account is blocked.', errorResponse));
+        default:
+          return Promise.reject(new ApiError(status, message, errorResponse));
       }
     }
-  );
-  const logout = async()=>{
-    store.dispatch(signOut());
-    if (typeof window !== 'undefined') {
-      window.location.href = '/user/signIn'
-    } else {
-      console.error('Router.push() cannot be used on the server side');
-    }
-   }
-  // Define response types for API methods
-  export interface ApiResponse<T> {
-    data: any;
-    message?: string;
-    success?:boolean
+
+    return Promise.reject(new ApiError(0, error.message || 'Request failed'));
   }
+);
 
-  // API methods with proper typing
-  export const api = {
-    get: <T>(url: string, config = {}) => 
-      apiClient.get<ApiResponse<T>>(url, config).then(response => response.data),
-    
-    post: <T>(url: string, data = {}, config = {}) =>
-      apiClient.post<ApiResponse<T>>(url, data, config).then(response => response.data),
-    
-    put: <T>(url: string, data = {}, config = {}) =>
-      apiClient.put<ApiResponse<T>>(url, data, config).then(response => response.data),
-    
-    delete: <T>(url: string, config = {}) =>
-      apiClient.delete<ApiResponse<T>>(url, config).then(response => response.data),
-  };
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  success?: boolean;
+}
 
-  export default api;
+export const api = {
+  get: <T>(url: string, config = {}) =>
+    apiClient.get<ApiResponse<T>>(url, config).then((response) => response.data),
+  post: <T>(url: string, data = {}, config = {}) =>
+    apiClient.post<ApiResponse<T>>(url, data, config).then((response) => response.data),
+  put: <T>(url: string, data = {}, config = {}) =>
+    apiClient.put<ApiResponse<T>>(url, data, config).then((response) => response.data),
+  delete: <T>(url: string, config = {}) =>
+    apiClient.delete<ApiResponse<T>>(url, config).then((response) => response.data),
+};
+
+export default api;

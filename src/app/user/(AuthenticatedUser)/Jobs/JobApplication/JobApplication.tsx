@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Briefcase, Upload, Check, Trash2, Plus } from 'lucide-react';
 import { IJob } from '../Types/Job';
+import { useAppSelector } from '@/app/store/store';
 
 
 interface JobApplicationProps {
@@ -96,6 +97,7 @@ const applicationSchema = z.object({
 type JobApplicationFormData = z.infer<typeof applicationSchema>;
 
 export function JobApplicationForm({ job, onSubmit,hasapplied }: JobApplicationProps) {
+  const user = useAppSelector((state) => state.auth.user);
   const [educationList, setEducationList] = useState([{
     institution: '',
     degree: '',
@@ -132,6 +134,45 @@ export function JobApplicationForm({ job, onSubmit,hasapplied }: JobApplicationP
     }
   });
 
+  // Pre-fill form with user data from Redux
+  useEffect(() => {
+    if (user) {
+      // Pre-fill personal information
+      setValue('fullName', `${user.firstName} ${user.lastName}`);
+      setValue('email', user.email);
+      setValue('phone', user.mobile || '');
+
+      // Pre-fill education
+      if (user.profile?.Education && user.profile.Education.length > 0) {
+        const formattedEducation = user.profile.Education.map(edu => ({
+          institution: edu.school,
+          degree: edu.degree,
+          field: '', 
+          startDate: new Date(edu.startDate).toISOString().split('T')[0],
+          endDate: new Date(edu.endDate).toISOString().split('T')[0],
+          current: false,
+          description: edu.skills?.join(', ') || ''
+        }));
+        setEducationList(formattedEducation);
+        setValue('education', formattedEducation);
+      }
+
+      // Pre-fill experience
+      if (user.profile?.Experience && user.profile.Experience.length > 0) {
+        const formattedExperience = user.profile.Experience.map(exp => ({
+          company: exp.company,
+          position: exp.title,
+          location: exp.location,
+          startDate: new Date(exp.startDate).toISOString().split('T')[0],
+          endDate: new Date(exp.endDate).toISOString().split('T')[0],
+          current: false,
+          description: exp.description
+        }));
+        setExperienceList(formattedExperience);
+        setValue('experience', formattedExperience);
+      }
+    }
+  }, [user, setValue]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

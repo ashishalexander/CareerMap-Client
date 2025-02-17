@@ -1,4 +1,4 @@
-// File: ProfileInfo.tsx
+"use client"
 import { FC, useEffect, useState } from 'react';
 import { Edit2, MapPin, Building2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';

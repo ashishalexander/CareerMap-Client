@@ -1,7 +1,6 @@
 import React from 'react';
-import { MapPin, Briefcase, PenSquare } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { MapPin, Briefcase} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Iuser } from '@/const/Iuser';
 
 export const UserProfile: React.FC<{ user: Iuser }> = ({ user }) => {

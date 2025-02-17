@@ -1,5 +1,6 @@
+// userMenu.tsx
 "use client"
-import React,{useEffect,} from 'react';
+import React, { useCallback, useEffect} from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/store/store';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -14,40 +15,73 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RootState } from '@/app/store/store';
-import api from '../../lib/axios-config'
+import api from '../../lib/axios-config';
+
+// Separate menu items component for better memoization
+const MenuItems = React.memo(({ isRecruiter, onSignOut }: { 
+  isRecruiter: boolean; 
+  onSignOut: () => void;
+}) => (
+  <>
+    <DropdownMenuItem asChild>
+      <Link href="/user/Profile">View Profile</Link>
+    </DropdownMenuItem>
+    {isRecruiter && (
+      <DropdownMenuItem asChild>
+        <Link href="/user/JobApplicationReview">Applications Received</Link>  
+      </DropdownMenuItem>
+    )}
+    <DropdownMenuItem asChild>
+      <Link href="/user/SubscriptionDash">Subscription Details</Link>
+    </DropdownMenuItem>
+    <DropdownMenuItem asChild>
+      <Link href="/settings">Settings</Link>
+    </DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem onClick={onSignOut}>
+      Sign Out
+    </DropdownMenuItem>
+  </>
+));
+
+MenuItems.displayName = 'MenuItems';
 
 export const UserMenu = () => {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state: RootState) => state.auth.user);
-  const router = useRouter()
+  const user = useAppSelector((state: RootState) => ({
+    firstName: state.auth.user?.firstName,
+    email: state.auth.user?.email,
+    role: state.auth.user?.role,
+    profilePicture: state.auth.user?.profile?.profilePicture
+  }));
+  const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (!user.firstName) {
       router.push('/user/signIn');
     }
-  }, [user,router]);
+  }, [user.firstName, router]);
 
-  
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     try {
-      await api.get('/api/users/logout')
+      await api.get('/api/users/logout');
       dispatch(signOut());
-      router.push('/user/signIn')
+      router.push('/user/signIn');
     } catch (error) {
       console.error('Logout failed', error);
     }
-  };
+  }, [dispatch, router]);
 
-  if (!user) {
-    return null; 
+  if (!user.firstName) {
+    return null;
   }
-  const isRecruiter = user.role === 'recruiter'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.profile?.profilePicture} alt={user.firstName} />
-          <AvatarFallback>{user.firstName?.charAt(0)}</AvatarFallback>
+          <AvatarImage src={user.profilePicture} alt={user.firstName} />
+          <AvatarFallback>{user.firstName.charAt(0)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -58,25 +92,13 @@ export const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/user/Profile">View Profile</Link>
-        </DropdownMenuItem>
-        {isRecruiter && (
-          <DropdownMenuItem asChild>
-            <Link href="/user/JobApplicationReview">Applications Received</Link>  
-          </DropdownMenuItem>
-        )}
-         <DropdownMenuItem asChild>
-          <Link href="/user/SubscriptionDash">Subscription Details</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings">Settings</Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
-          Sign Out
-        </DropdownMenuItem>
+        <MenuItems 
+          isRecruiter={user.role === 'recruiter'} 
+          onSignOut={handleSignOut}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
+
+export default React.memo(UserMenu);

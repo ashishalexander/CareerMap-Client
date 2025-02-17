@@ -21,11 +21,20 @@ const PostSchema = z.object({
   message: "Either text or media must be provided"
 });
 
+// Updated schema definitions
 const CustomQuestionSchema = z.object({
-  question: z.string().min(1, "Question is required"),
+  question: z.string().min(1, "Question is required").max(200, "Question cannot exceed 200 characters"),
   type: z.enum(["text", "multiple-choice"]),
-  options: z.array(z.string()).optional()
+  options: z.array(z.string().min(1, "Option cannot be empty")).optional()
+}).refine((data) => {
+  if (data.type === "multiple-choice") {
+    return data.options && data.options.length >= 2;
+  }
+  return true;
+}, {
+  message: "Multiple choice questions must have at least 2 options"
 });
+
 
 const JobPostSchema = z.object({
   title: z.string().min(1, "Job title is required").max(100),
@@ -38,8 +47,25 @@ const JobPostSchema = z.object({
   requirements: z.string().min(20, "Requirements must be at least 20 characters").max(1000),
   salary: z.string().optional(),
   contactEmail: z.string().email("Invalid email address"),
-  customQuestions: z.array(CustomQuestionSchema).optional()
-
+  customQuestions: z.array(CustomQuestionSchema)
+  .max(5, "You can add up to 5 custom questions")
+  .optional()
+}).refine((data) => {
+// Additional validation for custom questions
+if (data.customQuestions) {
+  return data.customQuestions.every((question) => {
+    if (question.type === "multiple-choice") {
+      return question.options && 
+             question.options.length >= 2 && 
+             question.options.length <= 6 && // Maximum 6 options
+             question.options.every(option => option.trim().length > 0);
+    }
+    return true;
+  });
+}
+return true;
+}, {
+message: "Multiple choice questions must have 2-6 non-empty options"
 });
 
 interface CustomQuestion {
@@ -244,6 +270,17 @@ export const CreatePost: React.FC = () => {
     }
 
     try {
+      // Clean up the data before validation
+    const cleanedJobPost = {
+      ...jobPost,
+      customQuestions: jobPost.customQuestions.map(q => ({
+        ...q,
+        // Remove empty options from multiple-choice questions
+        options: q.type === 'multiple-choice' 
+          ? q.options?.filter(opt => opt.trim().length > 0)
+          : undefined
+      }))
+    };
       JobPostSchema.parse(jobPost);
 
       await api.post(`/api/users/activity/JobPost/${userId}`, {
@@ -270,7 +307,12 @@ export const CreatePost: React.FC = () => {
       if (error instanceof z.ZodError) {
         const newErrors: Record<string, string> = {};
         error.errors.forEach(err => {
-          if (err.path[0]) {
+          // Handle nested paths for custom questions
+          const path = err.path.join('.');
+          if (path.startsWith('customQuestions')) {
+            const questionIndex = parseInt(err.path[1] as string);
+            newErrors[`question_${questionIndex}`] = err.message;
+          } else if (err.path[0]) {
             newErrors[err.path[0].toString()] = err.message;
           }
         });
@@ -558,6 +600,9 @@ export const CreatePost: React.FC = () => {
                               onChange={(e) => updateCustomQuestion(index, 'question', e.target.value)}
                               placeholder="Enter your question"
                             />
+                            {fieldErrors[`question_${index}`] && (
+                              <p className="text-sm text-red-500 mt-1">{fieldErrors[`question_${index}`]}</p>
+                            )}
                           </div>
                           <Button
                             variant="ghost"
