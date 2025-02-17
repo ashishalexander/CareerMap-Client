@@ -9,7 +9,7 @@ interface JobDetailsProps {
 export function JobDetails({ job }: JobDetailsProps) {
   const router = useRouter()
   const handleApply = ()=>{
-    router.push(`/user/AuthenticatedUser/Jobs/JobApplication/${job._id}`)
+    router.push(`/user/Jobs/JobApplication/${job._id}`)
   }
   return (
     <div className="space-y-6">

@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAppSelector, RootState } from '../../../../store/store';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -202,7 +203,7 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
           {selectedPost.media && selectedPost.media.length > 0 && (
             <Image
               src={selectedPost.media[0].url} 
-              alt={selectedPost.media[0].description}
+              alt={selectedPost.media[0].description?? "Media content"}
               width={499.200}
               height={332.800}
               className="max-h-full max-w-full object-contain"

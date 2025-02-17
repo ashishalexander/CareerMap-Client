@@ -1,3 +1,4 @@
+"use client"
 import { FC } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,19 +90,7 @@ export const ProfileSkeleton: FC = () => {
       </div>
 
       {/* Pulse Animation Styles */}
-      <style jsx>{`
-        @keyframes pulse {
-          0% {
-            opacity: 0.6;
-          }
-          50% {
-            opacity: 0.8;
-          }
-          100% {
-            opacity: 0.6;
-          }
-        }
-      `}</style>
+      <Skeleton className="h-12 w-12 rounded-full animate-pulse" />
     </div>
   );
 };

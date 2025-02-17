@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector, RootState } from "../../../../store/store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
