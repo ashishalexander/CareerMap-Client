@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Timer, Send, CheckCircle2 } from "lucide-react";
 import Swal from 'sweetalert2';
-import { headers } from "next/headers";
 import axios from "axios";
 
 
@@ -142,7 +141,7 @@ const AlternateOtpPage: React.FC = () => {
               Authentication Required
             </h1>
             <p className="mt-3 text-gray-600">
-              We've sent a 4-digit code to your registered email. Please
+              We&apos;ve sent a 4-digit code to your registered email. Please
               enter it below.
             </p>
           </div>
@@ -212,7 +211,5 @@ const AlternateOtpPage: React.FC = () => {
 };
 
 export default AlternateOtpPage;
-function setError(arg0: string) {
-  throw new Error("Function not implemented.");
-}
+
 

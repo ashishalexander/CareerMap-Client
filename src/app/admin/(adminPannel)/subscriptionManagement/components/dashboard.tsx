@@ -34,7 +34,7 @@ import TransactionHistoryModal from './TransactionHistory';
 const PLAN_OPTIONS = {
   ALL: 'all',
   PROFESSIONAL: 'Professional',
-  RECRUITER_PRO: 'recruiter-pro'
+  RECRUITER_PRO: 'Recruiter Pro'
 } as const;
 
 const TIMEFRAME_OPTIONS = {
@@ -48,7 +48,7 @@ type PlanType = typeof PLAN_OPTIONS[keyof typeof PLAN_OPTIONS];
 type TimeframeType = typeof TIMEFRAME_OPTIONS[keyof typeof TIMEFRAME_OPTIONS];
 
 const AdminDashboard = () => {
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [dateRange, setDateRange] = useState({ start: '' });
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(PLAN_OPTIONS.ALL);
   const [selectedTimeframe, setSelectedTimeframe] = useState<TimeframeType>(TIMEFRAME_OPTIONS.All);
   const [searchQuery, setSearchQuery] = useState('');

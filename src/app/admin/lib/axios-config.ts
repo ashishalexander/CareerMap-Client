@@ -99,6 +99,8 @@ export const api = {
     apiClient.post<ApiResponse<T>>(url, data, config).then((response) => response.data),
   put: <T>(url: string, data = {}, config = {}) =>
     apiClient.put<ApiResponse<T>>(url, data, config).then((response) => response.data),
+  patch: <T>(url: string, data = {}, config = {}) =>
+    apiClient.patch<ApiResponse<T>>(url, data, config).then((response) => response.data),
   delete: <T>(url: string, config = {}) =>
     apiClient.delete<ApiResponse<T>>(url, config).then((response) => response.data),
 };

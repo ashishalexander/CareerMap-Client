@@ -1,6 +1,6 @@
 // services/metricsService.ts
 import api from '../../../lib/axios-config';
-import { JobMetrics, NetworkMetrics, UserGrowthMetrics } from '../Types/metrics';
+import { DashboardMetrics, JobMetrics, NetworkMetrics, UserGrowthMetrics } from '../Types/metrics';
 
 export const jobMetricsService = {
   getJobMetrics: async (): Promise<JobMetrics> => {
@@ -22,3 +22,10 @@ export const userGrowthMetricsService = {
     return response.data;
   }
 };
+
+export const dashboardMetrics = {
+  getdashboardMetrics: async (): Promise<DashboardMetrics> =>{
+    const response = await api.get<DashboardMetrics>('/api/admin/dashboard/metrics')
+    return response.data
+  }
+}

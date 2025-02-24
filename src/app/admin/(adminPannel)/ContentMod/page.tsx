@@ -1,23 +1,21 @@
+"use client"
+import { Suspense } from 'react';
+import { ContentModerationHeader } from './components/ContentModerationHeader';
+import { ReportsList } from './components/ReportsList';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingSpinner } from './components/LoadingSpinner';
 
-import { Metadata } from 'next';
-import { ReportsList } from './ReportsList';
 
-export const metadata: Metadata = {
-  title: 'Content Moderation Reports',
-  description: 'Review and manage content moderation reports',
-};
-
-export default function ReportsPage() {
+export default function ContentModerationPage() {
   return (
-    <div className="container mx-auto py-8 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Content Moderation</h1>
-        <p className="text-muted-foreground mt-2">
-          Review and manage reported content from users
-        </p>
-      </div>
+    <div className="container mx-auto py-2 max-w-7xl">
+      <ContentModerationHeader />
       
-      <ReportsList />
+      <ErrorBoundary fallback={<div>Something went wrong loading the reports. Please try again.</div>}>
+        <Suspense fallback={<LoadingSpinner />}>
+          <ReportsList />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

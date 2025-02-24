@@ -127,11 +127,11 @@ const SubscriptionDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {subscriptionData?.paymentHistory?.map((transaction) => (
-                  <tr key={transaction.transactionId} className="border-b hover:bg-gray-50">
+                  <tr key={transaction._id} className="border-b hover:bg-gray-50">
                     <td className="p-3">
                       {new Date(transaction.date).toLocaleDateString()}
                     </td>
-                    <td className="p-3 font-mono">{transaction.transactionId}</td>
+                    <td className="p-3 font-mono">{transaction._id}</td>
                     <td className="p-3">{transaction.planType}</td>
                     <td className="p-3 capitalize">{transaction.billingCycle}</td>
                     <td className="p-3 text-right">

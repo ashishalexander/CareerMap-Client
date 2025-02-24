@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { 
@@ -103,7 +102,7 @@ export function DataTable<T>({
                 <SelectValue placeholder="Rows per page" />
               </SelectTrigger>
               <SelectContent>
-                {[10, 20, 50, 100].map((size) => (
+                {[5,10, 20, 50, 100].map((size) => (
                   <SelectItem key={size} value={size.toString()}>
                     {size} rows
                   </SelectItem>

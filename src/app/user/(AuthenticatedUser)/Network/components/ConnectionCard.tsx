@@ -19,7 +19,7 @@ export function ConnectionCard({ user, onConnect }: ConnectionCardProps) {
 
   return (
     <Link 
-      href={`/user/AuthenticatedUser/ProfileDynamicRouting/${user._id}`} 
+      href={`/user/ProfileDynamicRouting/${user._id}`} 
       className="block transition-opacity hover:opacity-95"
       prefetch={true}
     >

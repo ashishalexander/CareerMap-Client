@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { networkMetricsService } from '../api/metricService';
 
 interface ConnectionActivity {
@@ -28,7 +28,6 @@ const NetworkActivityMetrics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
   useEffect(() => {
     const fetchNetworkMetrics = async () => {
@@ -81,13 +80,13 @@ const NetworkActivityMetrics = () => {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full h-[600px]">
       <CardHeader>
         <CardTitle>Network Activity Metrics</CardTitle>
         <CardDescription>Monitor connection growth and networking patterns</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="h-[300px]">
+        <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={networkData.connectionActivity}
@@ -123,29 +122,6 @@ const NetworkActivityMetrics = () => {
                 name="Requests Received"
               />
             </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={networkData.connectionStatus}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {networkData.connectionStatus.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

@@ -59,7 +59,7 @@ export interface Iuser {
         }];
     };
     subscription?: {
-        planType: 'Professional' | 'recruiter-pro' | null;
+        planType: 'Professional' | 'Recruiter Pro' | null;
         billingCycle: 'monthly' | 'yearly' | null;
         startDate?: Date | null;
         endDate?: Date | null;
@@ -69,7 +69,7 @@ export interface Iuser {
             amount: number;
             date: Date;
             billingCycle: 'monthly' | 'yearly';
-            planType: 'Professional' | 'recruiter-pro';
+            planType: 'Professional' | 'Recruiter Pro';
         }[];
     };
 }

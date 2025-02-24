@@ -34,13 +34,13 @@ const UserGrowthMetrics = () => {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full h-[600px]">
       <CardHeader>
         <CardTitle>User Growth Metrics</CardTitle>
         <CardDescription>Track user growth and distribution over time</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="growth" className="space-y-4">
+        <Tabs defaultValue="growth" className="space-y-4 h-[480px]">
           <TabsList>
             <TabsTrigger value="growth">Growth Over Time</TabsTrigger>
             <TabsTrigger value="distribution">User Distribution</TabsTrigger>
