@@ -33,27 +33,8 @@ const JobMarketMetrics = () => {
   if (error) return <div>Error: {error}</div>;
   if (!metrics) return null;
 
-  const formatTime = (ms: number) => {
-    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-    return `${days} days`;
-  };
-
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Job Market Overview</CardTitle>
-          <CardDescription>Current job statistics</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div>Total Jobs: {metrics.totalJobs}</div>
-          <div>Active Jobs: {metrics.activeJobs}</div>
-          <div>Completed Jobs: {metrics.completedJobs}</div>
-          <div>Success Rate: {metrics.jobSuccessRate.toFixed(1)}%</div>
-          <div>Avg Completion Time: {formatTime(metrics.averageCompletionTime)}</div>
-        </CardContent>
-      </Card>
-
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Job Posting Trends</CardTitle>
@@ -92,7 +73,7 @@ const JobMarketMetrics = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%) `}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"

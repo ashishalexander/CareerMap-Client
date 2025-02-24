@@ -26,7 +26,7 @@ export default async function SubscriptionPage() {
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm text-gray-500">
               <li>
-                <a href="/dashboard" className="hover:text-gray-700">
+                <a href="#" className="hover:text-gray-700">
                   Dashboard
                 </a>
               </li>

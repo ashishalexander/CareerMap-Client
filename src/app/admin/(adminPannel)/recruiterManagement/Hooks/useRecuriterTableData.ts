@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import api from '../../../../lib/axios-config'
+import api from '../../../lib/axios-config'
 import { Iuser } from '@/const/Iuser'
 
 interface UseRecruiterTableDataParams {
@@ -11,13 +11,13 @@ interface UseRecruiterTableDataParams {
 }
 
 interface RecruiterListResponse {
-  data?: {
+  
     data?: Iuser[]
     total?: number
     page?: string
     totalPages?: string
-  }
-  message?: string
+  
+  
 }
   
 export function useRecruiterTableData({
@@ -40,16 +40,17 @@ export function useRecruiterTableData({
 
         const response = await api.get<RecruiterListResponse>('/api/admin/fetchUsers', {
           params: {
+            role: "recruiter",
             search: searchTerm,
             page: currentPage,
             pageSize,
-            sortBy: sortColumn,
-            sortDirection
+            sortBy: sortColumn || 'firstName',
+            sortOrder: sortDirection, 
           }
         })
 
         const responseData = response.data?.data || []
-        const total = response.data?.data?.total || 0
+        const total = response.data.total || 0
 
         if (Array.isArray(responseData)) {
           const filteredRecruiters = responseData.filter((user: Iuser) => 

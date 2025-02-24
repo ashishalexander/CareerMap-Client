@@ -1,25 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, UserCheck, TrendingUp, ArrowUp, ArrowDown, IndianRupee } from 'lucide-react';
-import api, { ApiError } from '../../../lib/axios-config';
+import  { ApiError } from '../../../lib/axios-config';
+import { dashboardMetrics } from '../api/metricService';
+import { DashboardMetrics, MetricCardProps } from '../Types/metrics';
 
 // Keep existing types and useMetricsData hook...
-interface MetricTrend {
-  type: 'increase' | 'decrease';
-  value: string;
-}
 
-interface MetricData {
-  value: string;
-  trend: MetricTrend;
-}
-
-interface DashboardMetrics {
-  totalUsers: MetricData;
-  activeUsers: MetricData;
-  revenue: MetricData;
-  growthRate: MetricData;
-}
 
 const useMetricsData = () => {
   const [data, setData] = useState<DashboardMetrics | null>(null);
@@ -29,8 +16,8 @@ const useMetricsData = () => {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await api.get<DashboardMetrics>('/api/admin/dashboard/metrics');
-        setData(response.data);
+        const response = await dashboardMetrics.getdashboardMetrics()
+        setData(response);
         setError(null);
       } catch (err) {
         if (err instanceof ApiError) {
@@ -75,13 +62,7 @@ const useCountAnimation = (end: number, duration = 2000) => {
   return count;
 };
 
-interface MetricCardProps {
-  title: string;
-  value: string;
-  icon: React.ElementType;
-  trend: MetricTrend;
-  format: (val: number) => string;
-}
+
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon: Icon, trend, format }) => {
   const isPositive = trend?.type === 'increase';

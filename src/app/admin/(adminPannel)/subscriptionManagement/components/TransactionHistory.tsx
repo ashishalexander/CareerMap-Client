@@ -77,7 +77,7 @@ const TransactionHistoryModal = ({ user, open, onOpenChange }: TransactionHistor
             </TableHeader>
             <TableBody>
               {user.subscription?.paymentHistory.map((transaction) => (
-                <TableRow key={transaction.transactionId}>
+                <TableRow key={transaction._id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-400" />

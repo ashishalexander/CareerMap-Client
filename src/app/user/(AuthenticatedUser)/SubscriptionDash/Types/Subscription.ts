@@ -3,7 +3,7 @@
 // types/subscription.ts
 export interface Transaction {
   date: string;
-  transactionId: string;
+  _id: string;
   planType: string;  
   billingCycle: string;
   amount: number;

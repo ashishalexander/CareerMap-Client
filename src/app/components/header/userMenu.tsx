@@ -26,9 +26,13 @@ const MenuItems = React.memo(({ isRecruiter, onSignOut }: {
     <DropdownMenuItem asChild>
       <Link href="/user/Profile">View Profile</Link>
     </DropdownMenuItem>
-    {isRecruiter && (
+    {isRecruiter? (
       <DropdownMenuItem asChild>
         <Link href="/user/JobApplicationReview">Applications Received</Link>  
+      </DropdownMenuItem>
+    ):(
+      <DropdownMenuItem asChild>
+        <Link href="/user/AppliedJobs">Applied Jobs</Link>
       </DropdownMenuItem>
     )}
     <DropdownMenuItem asChild>

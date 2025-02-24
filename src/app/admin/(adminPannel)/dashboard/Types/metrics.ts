@@ -10,10 +10,6 @@ export interface JobMetrics {
     value: number;
   }>;
   totalJobs: number;
-  activeJobs: number;
-  completedJobs: number;
-  averageCompletionTime: number;
-  jobSuccessRate: number;
 }
   
   export interface NetworkMetrics {
@@ -40,4 +36,30 @@ export interface JobMetrics {
       type: string;
       count: number;
     }>;
+  }
+
+
+  export interface MetricTrend {
+    type: 'increase' | 'decrease';
+    value: string;
+  }
+  
+  interface MetricData {
+    value: string;
+    trend: MetricTrend;
+  }
+  
+  export interface DashboardMetrics {
+    totalUsers: MetricData;
+    activeUsers: MetricData;
+    revenue: MetricData;
+    growthRate: MetricData;
+  }
+
+  export interface MetricCardProps {
+    title: string;
+    value: string;
+    icon: React.ElementType;
+    trend: MetricTrend;
+    format: (val: number) => string;
   }

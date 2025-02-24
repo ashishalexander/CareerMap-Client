@@ -3,17 +3,15 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CreatePost } from './components/PostCreation';
 import { PostFeed } from './components/PostCard';
-import { IPost } from '@/const/Ipost';
 import { UserProfile } from './components/profile';
 import { RootState } from '@/app/store/store';
-import { useAppDispatch, useAppSelector } from '@/app/store/store';
+import { useAppSelector } from '@/app/store/store';
 import { Iuser } from '@/const/Iuser';
 
 // Create QueryClient outside the component
 const queryClient = new QueryClient();
 
 const HomePage: React.FC<{ user: Iuser }> = () => {
-  const dispatch = useAppDispatch();
   const user = useAppSelector((state: RootState) => state.auth.user);
 
   return (

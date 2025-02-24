@@ -11,12 +11,14 @@ import {
   Mic,
   MicOff,
   Phone,
+  Lock,
 } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { useChat } from "../hooks/useChat";
 import { useAppSelector } from "@/app/store/store";
 import { useSocket } from "../../providers";
 import Peer from "simple-peer";
+import { toast } from "sonner";
 
 interface ChatRoomProps {
   roomId: string;
@@ -38,6 +40,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, receiverId }) => {
   const [callStatus, setCallStatus] = useState<"idle" | "calling" | "in-call">("idle");
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   
+  const subscription = useAppSelector((state) => state.auth.user?.subscription);
+
+  // Check premium status
+  const hasPremiumAccess = subscription?.isActive && 
+    (subscription?.planType === 'Professional' || subscription?.planType === 'Recruiter Pro');
 
   // Peer Connection References
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -360,6 +367,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, receiverId }) => {
     if (!socket) return;
 
     socket.on("incoming_video_call", async (data) => {
+      if (!hasPremiumAccess) {
+        socket.emit("reject_video_call", {
+          roomId,
+          to: data.from,
+        });
+        toast.error("Premium Required", {
+          description: "Upgrade to Premium to accept video calls",
+          action: {
+            label: "Upgrade",
+            onClick: () => window.location.href = "/user/Premium"
+          },
+          duration: 5000
+        });
+        return;
+      }
       console.log("Received incoming call:", data);
       if (data.to === userId && data.roomId === roomId) {
         const acceptCall = window.confirm("Incoming video call. Accept?");
@@ -423,8 +445,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, receiverId }) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
+    if (!hasPremiumAccess) {
+      toast.error("Premium Required", {
+        description: "Upgrade to Premium to send messages",
+        action: {
+          label: "Upgrade",
+          onClick: () => window.location.href = "/user/Premium"
+        },
+        duration: 5000
+      });
+      return;
+    }
+
     sendMessage(newMessage, receiverId);
     setNewMessage("");
+  };
+
+  const handleVideoCallClick = () => {
+    if (!hasPremiumAccess) {
+      toast.error("Premium Required", {
+        description: "Video calls are a premium feature. Upgrade to access.",
+        action: {
+          label: "Upgrade",
+          onClick: () => window.location.href = "/user/Premium"
+        },
+        duration: 5000
+      });
+      return;
+    }
+
+    // Existing video call logic here
+    startVideoCall();
   };
 
   // Loading state
@@ -521,17 +572,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, receiverId }) => {
         <Button
           variant="outline"
           size="icon"
-          onClick={startVideoCall}
-          disabled={isVideoCallActive}
+          onClick={handleVideoCallClick}
+          className="relative"
         >
           <Video className="h-5 w-5" />
+          {!hasPremiumAccess && (
+            <Lock className="h-3 w-3 absolute bottom-0 right-0 text-yellow-500" />
+          )}
         </Button>
       </div>
 
       {/* Messages Area */}
       <ScrollArea className="flex-1">
-        <div className="p-4">
-          {messages && messages.length > 0 ? (
+      <div className="p-4">
+          {!hasPremiumAccess ? (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 p-6">
+              <Lock className="h-12 w-12 text-yellow-500" />
+              <h3 className="text-lg font-semibold text-center">Premium Feature</h3>
+              <p className="text-center text-gray-600 max-w-md">
+                Upgrade to Premium to unlock messaging and video calls.
+                Connect with professionals and recruiters seamlessly.
+              </p>
+              <Button
+                onClick={() => window.location.href = "/user/Premium"}
+                className="mt-4"
+              >
+                Upgrade to Premium
+              </Button>
+            </div>
+          ) : messages && messages.length > 0 ? (
             <>
               {messages.map((message) => (
                 <ChatMessage
@@ -559,10 +628,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, receiverId }) => {
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={hasPremiumAccess 
+              ? "Type a message..." 
+              : "Upgrade to Premium to send messages"}
             className="flex-1"
+            disabled={!hasPremiumAccess}            
           />
-          <Button type="submit" size="icon">
+          <Button type="submit" size="icon" disabled={!hasPremiumAccess}>
             <Send className="h-4 w-4" />
           </Button>
         </div>

@@ -10,6 +10,7 @@ import { PlusCircle, Briefcase, X, Trash2, Plus } from "lucide-react";
 import { useAppSelector } from '@/app/store/store';
 import { Separator } from "@/components/ui/separator";
 import api from '@/app/lib/axios-config';
+import { toast } from 'sonner';
 
 const PostSchema = z.object({
   text: z.string().max(5000, { message: "Post text cannot exceed 5000 characters" }).optional(),
@@ -103,6 +104,7 @@ export const CreatePost: React.FC = () => {
   const userId = useAppSelector((state) => state.auth.user?._id);
   const user = useAppSelector((state) => state.auth.user);
   const isRecruiter = user?.role === 'recruiter';
+  const subscription = useAppSelector((state) => state.auth.user?.subscription);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -271,16 +273,16 @@ export const CreatePost: React.FC = () => {
 
     try {
       // Clean up the data before validation
-    const cleanedJobPost = {
-      ...jobPost,
-      customQuestions: jobPost.customQuestions.map(q => ({
-        ...q,
-        // Remove empty options from multiple-choice questions
-        options: q.type === 'multiple-choice' 
-          ? q.options?.filter(opt => opt.trim().length > 0)
-          : undefined
-      }))
-    };
+    // const cleanedJobPost = {
+    //   ...jobPost,
+    //   customQuestions: jobPost.customQuestions.map(q => ({
+    //     ...q,
+    //     // Remove empty options from multiple-choice questions
+    //     options: q.type === 'multiple-choice' 
+    //       ? q.options?.filter(opt => opt.trim().length > 0)
+    //       : undefined
+    //   }))
+    // };
       JobPostSchema.parse(jobPost);
 
       await api.post(`/api/users/activity/JobPost/${userId}`, {
@@ -321,16 +323,46 @@ export const CreatePost: React.FC = () => {
     }
   };
 
+
+  const handleJobPostClick = (open: boolean) => {
+    // Only run check when attempting to open the dialog
+    if (!open) {
+      setIsJobDialogOpen(false);
+      return;
+    }
+
+    if (!isRecruiter) return;
+
+    const isPremium = subscription?.isActive && subscription?.planType === 'Recruiter Pro';
+
+    if (isPremium) {
+      setIsJobDialogOpen(true);
+    } else {
+      toast.error("Premium Required", {
+        description: "You need a Recruiter Pro subscription to post jobs. Upgrade your plan to access this feature.",
+        action: {
+          label: "Upgrade Now",
+          onClick: () => window.location.href = "/user/Premium"
+        },
+        duration: 5000
+      });
+    }
+  };
+  
+
   return (
     <Card className="mb-4">
-      <CardHeader>
+       <CardHeader>
         <div className="flex items-center gap-3">
           <img 
             src={user?.profile?.profilePicture || "https://placehold.jp/40x40.png"} 
             alt="User avatar" 
             className="rounded-full w-10 h-10" 
           />
-          <button className="w-full text-left rounded-full border px-4 py-2 text-gray-500 hover:bg-gray-100">
+          <button 
+            onClick={() => setIsArticleDialogOpen(true)}
+            className="w-full text-left rounded-full border px-4 py-2 text-gray-500 hover:bg-gray-100"
+          >
             Start a post
           </button>
         </div>
@@ -423,7 +455,7 @@ export const CreatePost: React.FC = () => {
         </Dialog>
 
         {isRecruiter && (
-          <Dialog open={isJobDialogOpen} onOpenChange={setIsJobDialogOpen}>
+          <Dialog open={isJobDialogOpen} onOpenChange={handleJobPostClick}>
             <DialogTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
                 <Briefcase size={20} />

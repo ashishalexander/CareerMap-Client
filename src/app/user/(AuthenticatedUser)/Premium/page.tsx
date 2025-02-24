@@ -154,13 +154,14 @@ const PremiumPlans: React.FC = () => {
               razorpay_signature: response.razorpay_signature,
               userId: user._id,
               planId: plan.id,
-              billingCycle
+              billingCycle,
+              amount
             });
 
             if (verificationResponse.data) {
               toast.success("Subscription activated successfully!");
               dispatch(updateSubscription(verificationResponse.data));
-              router.push('/user/AuthenticatedUser/Home');
+              router.push('/user/Home');
             } else {
               toast.error("Payment verification failed");
             }
@@ -184,7 +185,6 @@ const PremiumPlans: React.FC = () => {
         },
         modal: {
           ondismiss: () => {
-            console.log('Payment modal closed by the user ⛈️⛈️⛈️.');
             toast.error("Payment cancelled");
           }
         }

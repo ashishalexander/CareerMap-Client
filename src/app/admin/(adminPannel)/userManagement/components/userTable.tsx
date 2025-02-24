@@ -4,12 +4,14 @@ import { DataTable } from '../../../components/DataTable/Table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Iuser } from '@/const/Iuser'
-import { useUserTableData } from './Hooks/useUserTableData'
-import useDebounce from '../../../components/Hooks/useDebounce'
+import { useUserTableData } from '../Hooks/useUserTableData'
+import useDebounce from '../../Hooks/useDebounce'
+import { Loader } from "lucide-react";
+
 
 export function UserTable() {
   const [searchInput, setSearchInput] = useState('')
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(5)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState<keyof Iuser | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -19,8 +21,7 @@ export function UserTable() {
 
   const { 
     users, 
-    loading, 
-    error, 
+    loading,  
     totalUsers, 
     handleTogle 
   } = useUserTableData({
@@ -32,8 +33,8 @@ export function UserTable() {
   })
 
   if (loading) return (
-    <div className="flex justify-center items-center h-64">
-      Loading users...
+    <div className="flex justify-center items-center h-20">
+      <Loader className="w-6 h-6 animate-spin text-primary" />
     </div>
   )
 
@@ -63,12 +64,12 @@ export function UserTable() {
           { 
             label: 'Email', 
             key: 'email',
-            sortable: true 
+            sortable: true
           },
           { 
             label: 'Role', 
             key: 'role',
-            sortable: true 
+            sortable: false
           }
         ]}
         actions={(user) => (

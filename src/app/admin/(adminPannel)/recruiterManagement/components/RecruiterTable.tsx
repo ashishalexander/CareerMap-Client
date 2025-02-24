@@ -4,12 +4,13 @@ import { DataTable } from '../../../components/DataTable/Table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Iuser } from '@/const/Iuser'
-import { useRecruiterTableData } from './Hooks/useRecuriterTableData'
-import useDebounce from '../../../components/Hooks/useDebounce'
+import { useRecruiterTableData } from '../Hooks/useRecuriterTableData'
+import useDebounce from '../../Hooks/useDebounce'
+import { Loader } from 'lucide-react'
 
 export function RecruiterTable() {
   const [searchInput, setSearchInput] = useState('')
-  const [pageSize, setPageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(5)
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState<keyof Iuser | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -20,7 +21,6 @@ export function RecruiterTable() {
   const { 
     recruiters, 
     loading, 
-    error, 
     totalRecruiters, 
     handleToggle 
   } = useRecruiterTableData({
@@ -32,8 +32,8 @@ export function RecruiterTable() {
   })
 
   if (loading) return (
-    <div className="flex justify-center items-center h-64">
-      Loading recruiters...
+    <div className="flex justify-center items-center h-20">
+      <Loader className="w-6 h-6 animate-spin text-primary" />
     </div>
   )
 
@@ -67,7 +67,7 @@ export function RecruiterTable() {
           { 
             label: 'Role', 
             key: 'role',
-            sortable: true 
+            sortable: false
           }
         ]}
         actions={(recruiter) => (
