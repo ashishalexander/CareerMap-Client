@@ -15,9 +15,6 @@ import EducationProfileComponent from './components/Education';
 import ExperienceProfileComponent from './components/Experience';
 import dynamic from 'next/dynamic';
 
-interface ProfileSectionProps {
-  userId?: string | null;
-}
 
 const ActivityProfileComponent = dynamic(
   () => import('./components/Activity'),
@@ -35,16 +32,16 @@ const RecruiterJobComponent = dynamic(
   }
 );
 
-const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
+const ProfileSection: FC = () => {
   const dispatch = useAppDispatch(); // Use custom useAppDispatch hook
   const currentUser = useAppSelector((state: RootState) => state.auth.user); // Accessing profile from profileSlice
-  const isOwnProfile: boolean = userId === null || (currentUser !== null && userId === currentUser._id);
+  const isOwnProfile = true;
   if (!currentUser) {
     return <ProfileSkeleton />;
   }
   const handleProfileUpdate = async (updateData: Partial<Iuser>) => {
     try {
-      const response = await api.post(`/api/users/profile/info/${currentUser?._id}`,updateData)
+      const response = await api.post<Iuser>(`/api/users/profile/info/${currentUser?._id}`,updateData)
       if(response&&response.data){
         dispatch(updateUserProfileInfo(response.data)); // Update profile using thunk
 
@@ -57,7 +54,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
 
   const handleProfileAbout = async (aboutData: string) => { // Changed to `string`
     try {
-      const response = await api.post(`/api/users/profile/about/${currentUser?._id}`, { about: aboutData });
+      const response = await api.post<Iuser>(`/api/users/profile/about/${currentUser?._id}`, { about: aboutData });
       console.log(response.data);
       dispatch(updateUserProfileAbout(response.data))
     } catch (error) {
@@ -70,7 +67,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
     const formData = new FormData()
     formData.append('file',file)
     try {
-          const response = await api.post(`/api/users/upload-profile-banner/${currentUser?._id}`,formData,
+          const response = await api.post<string>(`/api/users/upload-profile-banner/${currentUser?._id}`,formData,
             {
               headers: {
                 'Content-Type': 'multipart/form-data',
@@ -97,7 +94,7 @@ const ProfileSection: FC<ProfileSectionProps> = ({ userId = null }) => {
           },
         }
       );
-      const imageUrl = response.data;
+      const imageUrl = response.data as string;
       dispatch(updateUserProfilePicture(imageUrl));
     } catch (error) {
       console.error('Failed to update profile picture:', error);

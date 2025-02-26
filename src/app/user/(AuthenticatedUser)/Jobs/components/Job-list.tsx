@@ -35,12 +35,12 @@ export function JobList({ onJobSelect, selectedJobId }: JobListProps) {
   } = useInfiniteQuery({
     queryKey: ['jobs', userId],
     queryFn: fetchJobs,
-    getNextPageParam: (lastPage) =>
+    getNextPageParam: (lastPage:any) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     initialPageParam: 1,
   });
 
-  const jobs = data?.pages.flatMap((page) => page.jobs) || [];
+  const jobs = data?.pages.flatMap((page:any) => page.jobs) || [];
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 

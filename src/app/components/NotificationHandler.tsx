@@ -4,7 +4,6 @@ import { useSocket } from '../user/(AuthenticatedUser)/providers';
 import { useAppDispatch } from '../store/store';
 import { usePathname } from 'next/navigation';
 import { setNewNotification } from '../store/slices/notificationSlice';
-import { INotification } from '../user/(AuthenticatedUser)/Notifications/Types/INotification';
 
 const NotificationHandler = () => {
   const socket = useSocket();
@@ -14,8 +13,7 @@ const NotificationHandler = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNotification = (notification: INotification) => {
-      // Only set new notification indicator if we're not on the notifications page
+    const handleNotification = () => {
       if (pathname !== '/user/Notifications') {
         dispatch(setNewNotification());
       }

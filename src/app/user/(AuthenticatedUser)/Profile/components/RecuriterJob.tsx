@@ -105,7 +105,7 @@ const RecruiterJobComponent: React.FC<RecruiterJobComponentProps> = ({
   const fetchJobPosts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await api.get(`/api/users/recruiter/JobPost/${user?._id}`);
+      const response = await api.get<JobPost[]>(`/api/users/recruiter/JobPost/${user?._id}`);
       setJobPosts(response.data);
     } catch (error) {
       console.error('Failed to fetch job posts:', error);

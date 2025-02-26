@@ -82,9 +82,9 @@ const UserProfileView: FC<UserProfileViewProps> = ({ params }) => {
     const fetchUserData = async () => {
       try {
         // Fetch user profile data
-        const userResponse = await api.get(`/api/users/profile/${params.userId}`);
+        const userResponse = await api.get<IUser>(`/api/users/profile/${params.userId}`);
         // Fetch user's posts separately
-        const postsResponse = await api.get(`/api/users/posts/${params.userId}`);
+        const postsResponse = await api.get<IPost[]>(`/api/users/posts/${params.userId}`);
         
         // Combine the data
         setUserData({

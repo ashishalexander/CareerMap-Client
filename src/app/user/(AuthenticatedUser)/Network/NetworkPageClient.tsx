@@ -30,7 +30,7 @@ export default function NetworkPageClient() {
   } = useInfiniteQuery<SuggestionsResponse, Error>({
     queryKey: ['suggestions', debouncedSearch],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.get<ApiResponse<SuggestionsResponse>>(
+      const response = await api.get<SuggestionsResponse>(
         `/api/users/network/suggestions/${user?._id}/?page=${pageParam}&search=${debouncedSearch}`
       );
       return response.data;
@@ -43,7 +43,7 @@ export default function NetworkPageClient() {
   const { data: requestsData } = useInfiniteQuery<FetchRequestResponse, Error>({
     queryKey: ['requests'],
     queryFn: async () => {
-      const response = await api.get<ApiResponse<FetchRequestResponse>>(
+      const response = await api.get<FetchRequestResponse>(
         `/api/users/network/pending-requests/${user?._id}`
       );
       return response.data;

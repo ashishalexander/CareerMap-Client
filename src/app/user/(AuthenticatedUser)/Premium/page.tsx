@@ -26,6 +26,12 @@ interface PlanType {
   forRole: string;
 }
 
+interface CreateOrderResponse {
+  id: string;
+  currency: string;
+  amount: number;
+}
+
 const PremiumPlans: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const dispatch = useAppDispatch();
@@ -128,7 +134,7 @@ const PremiumPlans: React.FC = () => {
 
       const amount = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
 
-      const response = await api.post(`/api/users/premium/create-order`, {
+      const response = await api.post<CreateOrderResponse>(`/api/users/premium/create-order`, {
         amount,
         currency: 'INR',
         planDetails: {
@@ -148,7 +154,7 @@ const PremiumPlans: React.FC = () => {
         order_id: id,
         handler: async (response: any) => {
           try {
-            const verificationResponse = await api.post('/api/users/premium/verify-payment', {
+            const verificationResponse = await api.post<any>('/api/users/premium/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,

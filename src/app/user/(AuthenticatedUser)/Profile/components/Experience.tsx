@@ -106,12 +106,12 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
       
       try {
         if (editingIndex !== null) {
-          const response = await api.put(`/api/users/profile/experience/${user._id}/${editingIndex}`,  formData );
+          const response = await api.put<any>(`/api/users/profile/experience/${user._id}/${editingIndex}`,  formData );
           dispatch(updateUserProfileExperience(response.data))
 
         } else {
           console.log(formData)
-          const response = await api.post(`/api/users/profile/experience/${user._id}`,  formData );
+          const response = await api.post<any>(`/api/users/profile/experience/${user._id}`,  formData );
           dispatch(updateUserProfileExperience(response.data))
         }
         setIsDialogOpen(false);
@@ -135,7 +135,7 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
   const handleDeleteExperience = async (id: string) => {
     if (!user?._id) return;
     try {
-      const response = await api.delete(`/api/users/delete/profile-experience/${user._id}/${id}`);
+      const response = await api.delete<any>(`/api/users/delete/profile-experience/${user._id}/${id}`);
       dispatch(updateUserProfileExperience(response.data))
 
       // Handle successful deletion (e.g., refresh the experiences list)

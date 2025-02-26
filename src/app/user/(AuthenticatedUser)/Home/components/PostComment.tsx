@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { Loader2, X } from 'lucide-react';
 import api from '../../../../lib/axios-config';
 import { cn } from '@/lib/utils';
+import { IPost, IUser } from '../Types/interfaces';
 
 interface CommentSectionProps {
   isOpen: boolean;

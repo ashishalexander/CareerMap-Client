@@ -1,8 +1,8 @@
 import React from 'react';
-import { Message } from "../Types";
+import {  useChatMessage } from "../Types";
 
 interface ChatMessageProps {
-  message: Message;
+  message: useChatMessage;
   isOwnMessage: boolean;
 }
 

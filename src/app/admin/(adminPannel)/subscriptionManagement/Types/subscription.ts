@@ -8,6 +8,7 @@ export type TimeframeType = 'All Time'|'Yearly' | 'weekly' | 'monthly';
 
 // Transaction details
 export interface Transaction {
+  _id:string;
   date: string;
   transactionId: string;
   planType: PlanType;

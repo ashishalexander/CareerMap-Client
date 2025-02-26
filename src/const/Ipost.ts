@@ -1,4 +1,3 @@
-import { Iuser } from "./Iuser";
 
 export interface IpostCreate {
   author: string;

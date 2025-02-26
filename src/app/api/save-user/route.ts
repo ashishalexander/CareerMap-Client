@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: data.message }, { status: response.status });
     }
   } catch (error) {
+    console.error(error)
     return NextResponse.json({ message: 'Failed to communicate with backend' }, { status: 500 });
   }
 }
