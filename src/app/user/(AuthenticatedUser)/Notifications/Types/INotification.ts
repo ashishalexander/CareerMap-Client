@@ -22,7 +22,6 @@ export type CombinedNotification = {
     receiverId?: string;
     postId?: string;
     source: 'admin' | 'user';
-    // Added new properties for user notifications
     senderName?: string;
     senderAvatar?: string;
     comment?: string;
@@ -38,3 +37,12 @@ export interface IUserNotification extends Document {
     message?: string;
     createdAt: Date;
 }
+
+export interface SenderData {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    profile: {
+        profilePicture:string
+    };
+  }

@@ -3,7 +3,7 @@ import { useSocket } from '../../providers';
 import { useAppDispatch, useAppSelector } from '../../../../store/store';
 import { usePathname } from 'next/navigation';
 import api from '@/app/lib/axios-config';
-import { CombinedNotification, INotification, IUserNotification } from '../Types/INotification';
+import { CombinedNotification, INotification, IUserNotification, SenderData } from '../Types/INotification';
 import { clearNewNotificationIndicator } from '@/app/store/slices/notificationSlice';
 
 interface PopulatedSenderId {
@@ -19,6 +19,9 @@ interface PopulatedUserNotification extends Omit<IUserNotification, 'senderId'> 
   senderId: PopulatedSenderId;
   message?: string;
 }
+
+
+
 
 export const useNotification = () => {
   const socket = useSocket();
@@ -66,7 +69,7 @@ export const useNotification = () => {
     const handleNewUserNotification = async (notification: IUserNotification) => {
       try {
         // Fetch the sender's details since the socket notification might not include full user data
-        const response = await api.get(`/api/users/FetchUserData/${notification.senderId}`);
+        const response = await api.get<SenderData>(`/api/users/FetchUserData/${notification.senderId}`);
         const senderData = response.data;
         console.log(senderData)
         
@@ -113,8 +116,8 @@ export const useNotification = () => {
         setLoading(true);
         
         const [adminResponse, userResponse] = await Promise.all([
-          api.get('/api/users/fetch/existingNotifications'),
-          api.get(`/api/users/fetch/userNotifications/${user?._id}`)
+          api.get<INotification[]>('/api/users/fetch/existingNotifications'),
+          api.get<any[]>(`/api/users/fetch/userNotifications/${user?._id}`)
         ]);
 
         const adminNotifications = adminResponse.data.map(transformAdminNotification);

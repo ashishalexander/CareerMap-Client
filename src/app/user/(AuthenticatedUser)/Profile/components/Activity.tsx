@@ -4,8 +4,7 @@ import { useAppSelector, RootState } from '../../../../store/store';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { ThumbsUp, MessageCircle, Send, Trash2 } from 'lucide-react';
+import { ThumbsUp, MessageCircle,Trash2 } from 'lucide-react';
 import api from '@/app/lib/axios-config';
 import { IPost } from "../../../../../const/Ipost";
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,7 +20,6 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
   const [posts, setPosts] = useState<IPost[]>([]);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<IPost | null>(null);
-  const [newComment, setNewComment] = useState('');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
 
@@ -29,7 +27,7 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
 
   const fetchUserPosts = useCallback(async () => {
     try {
-      const response = await api.get(`/api/users/profile/activity/${user?._id}`);
+      const response = await api.get<IPost[]>(`/api/users/profile/activity/${user?._id}`);
       setPosts(response.data);
     } catch (error) {
       console.error('Failed to fetch posts:', error);
@@ -60,55 +58,6 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
     }
   };
 
-  const handleAddComment = async (postId: string) => {
-    if (!newComment.trim()) return;
-
-    try {
-      const response = await api.post(`/api/posts/comment/${postId}`, {
-        userId: user?._id,
-        text: newComment
-      });
-
-      // Update the selected post with new comments
-      if (selectedPost) {
-        setSelectedPost({
-          ...selectedPost,
-          comments: response.data.comments
-        });
-      }
-
-      // Update the posts list
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post._id === postId ? response.data : post
-        )
-      );
-
-      setNewComment('');
-    } catch (error) {
-      console.error('Failed to add comment:', error);
-    }
-  };
-
-  const handleLikePost = async (postId: string) => {
-    try {
-      const response = await api.post(`/api/posts/like/${postId}/${user?._id}`);
-      
-      // Update posts with the liked post
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post._id === postId ? response.data : post
-        )
-      );
-
-      // Update selected post if it's the same post
-      if (selectedPost && selectedPost._id === postId) {
-        setSelectedPost(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to like post:', error);
-    }
-  };
 
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -174,10 +123,6 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLikePost(post._id);
-              }}
               className="flex items-center gap-2"
             >
               <ThumbsUp className="h-4 w-4" />
@@ -242,7 +187,6 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
           <div className="flex items-center space-x-4 mb-4">
             <Button 
               variant="ghost"
-              onClick={() => handleLikePost(selectedPost._id)}
               className="flex items-center gap-2"
             >
               <ThumbsUp className="h-4 w-4" />
@@ -271,24 +215,6 @@ const ActivityProfileComponent: React.FC<ActivityProfileComponentProps> = ({ isO
                 ))}
               </ScrollArea>
             )}
-          </div>
-
-          {/* Comment Input */}
-          <div className="mt-4 flex items-center space-x-2">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
-              className="resize-none h-20"
-            />
-            <Button 
-              size="icon" 
-              variant="default"
-              onClick={() => handleAddComment(selectedPost._id)}
-              disabled={!newComment.trim()}
-            >
-              <Send className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </div>

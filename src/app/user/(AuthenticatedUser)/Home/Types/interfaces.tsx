@@ -1,10 +1,10 @@
 // Types
-interface IProfile {
+export interface IProfile {
     profilePicture?: string;
     headline?:string;
 }
   
-  interface IUser {
+ export interface IUser {
     _id: string;
     firstName: string;
     lastName: string;
@@ -12,24 +12,24 @@ interface IProfile {
     profile: IProfile;
   }
   
-  interface ILike {
+ export  interface ILike {
     userId: string;
   }
   
-  interface IComment {
+ export interface IComment {
     _id: string;
     content: string;
     user: IUser;
     createdAt: string;
   }
   
-  interface IMedia {
+export   interface IMedia {
     type: string;
     url: string;
     description?: string;
   }
   
-  interface IPost {
+ export  interface IPost {
     _id: string;
     text: string;
     author: IUser;
@@ -39,7 +39,7 @@ interface IProfile {
     createdAt: string;
   }
   
-  interface PostResponse {
+  export interface PostResponse {
     posts: IPost[];
     nextPage?: number;
   }

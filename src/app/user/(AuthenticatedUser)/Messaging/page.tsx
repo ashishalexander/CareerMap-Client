@@ -9,22 +9,21 @@ import { useSocket } from '../providers';
 import { useAppSelector } from "@/app/store/store";
 
 // Define interfaces matching our MongoDB models
-interface User {
+export interface User {
   _id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  profile?: {
+    profilePicture?: string;
+  };
 }
 
 interface DBMessage {
   _id: string;
-  chat: string;
-  sender: string;
   content: string;
-  type: 'text' | 'image' | 'file';
-  readBy: string[];
   createdAt: string;
-  updatedAt: string;
+  sender:string;
+  
 }
 
 interface DBChatRoom {

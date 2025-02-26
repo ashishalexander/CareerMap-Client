@@ -22,9 +22,9 @@ export default function JobApplicationPage() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await api.get(`/api/users/jobsById/${jobId}`);
+        const response = await api.get<IJob>(`/api/users/jobsById/${jobId}`);
         setJob(response.data);
-        const responseboolean = await api.get(`/api/users/isApplied/${user?._id}/${jobId}`)
+        const responseboolean = await api.get<boolean>(`/api/users/isApplied/${user?._id}/${jobId}`)
         setIsApplied(responseboolean.data)
       } catch (err) {
         setError('Failed to load job details');

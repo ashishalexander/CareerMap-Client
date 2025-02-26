@@ -46,7 +46,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, postI
       });
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data:any) => {
       if (data.blocked) {
         // Post was automatically blocked due to reaching threshold
         // You might want to update the UI or trigger a refresh

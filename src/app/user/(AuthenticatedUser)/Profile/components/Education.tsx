@@ -131,10 +131,10 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
       };
       console.log(Education)
       if(editingIndex){
-        const  response = await api.put(`/api/users/profile/education-update/${editingIndex}/${user?._id}`,{Education})
+        const  response = await api.put<any>(`/api/users/profile/education-update/${editingIndex}/${user?._id}`,{Education})
         dispatch(updateUserProfileEducation(response.data))
       }else{
-        const response = await api.post(`/api/users/profile/education/${user?._id}`,{Education})
+        const response = await api.post<any>(`/api/users/profile/education/${user?._id}`,{Education})
         dispatch(updateUserProfileEducation(response.data))
       }
       setIsDialogOpen(false);
@@ -147,7 +147,7 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
 
   const handleDeleteEducation = async (index: string) => {
     try {
-      const response = await api.delete(`/api/users/delete/profile-education/${index}/${user?._id}`);
+      const response = await api.delete<any>(`/api/users/delete/profile-education/${index}/${user?._id}`);
        dispatch(updateUserProfileEducation(response.data));
     } catch (error) {
       console.error('Failed to delete education:', error);

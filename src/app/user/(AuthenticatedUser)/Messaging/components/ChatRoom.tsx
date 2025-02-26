@@ -38,6 +38,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({ roomId, receiverId }) => {
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [callStatus, setCallStatus] = useState<"idle" | "calling" | "in-call">("idle");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   
   const subscription = useAppSelector((state) => state.auth.user?.subscription);

@@ -45,7 +45,7 @@ const NetworkActivityMetrics = () => {
           connectionActivity: transformedActivity,
           connectionStatus: response.connectionStatus
         });
-      } catch (err: any) {
+      } catch (err: any ) {
         setError(err.message || 'An error occurred while fetching network metrics');
       } finally {
         setLoading(false);

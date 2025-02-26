@@ -53,10 +53,8 @@ const JobApplicationsViewer: React.FC<JobApplicationsViewerProps> = ({ jobId }) 
     try {
       setLoading(true);
       const response = await api.get<{
-        data: {
           applications: Application[];
           total: number;
-        }
       }>(`api/users/applications/job/${jobId}`, {
         params: { page }
       });

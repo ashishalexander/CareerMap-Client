@@ -14,12 +14,13 @@ import { useRouter } from 'next/navigation';
 import { CommentSection } from './PostComment';
 import { cn } from '@/lib/utils';
 import { ReportModal } from './ReportPostModal';
+import { PostResponse,IPost,IUser } from '../Types/interfaces';
 
 
-// API Functions
+
 const fetchPosts = async ({ pageParam = 1, userId }: { pageParam: number; userId: string }): Promise<PostResponse> => {
   try {
-    const response = await api.get(`/api/users/home/feeds/${userId}`, {
+    const response = await api.get<PostResponse>(`/api/users/home/feeds/${userId}`, {
       params: {
         page: pageParam,
         limit: 10
@@ -61,9 +62,9 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
     }
   }, [user, router]);
 
-  if (!user?._id) {
-    return null;
-  }
+  // if (!user?._id) {
+  //   return null;
+  // }
 
   // Posts Query
   const {
@@ -74,11 +75,11 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
     isFetching,
     isFetchingNextPage
   } = useInfiniteQuery({
-    queryKey: ['posts', user._id],
+    queryKey: ['posts', user?._id ],
     queryFn: ({ pageParam }) => fetchPosts({ pageParam, userId: user._id }),
     getNextPageParam: (lastPage) => lastPage.nextPage || undefined,
     initialPageParam: 1,
-    enabled: !!user._id,
+    enabled: !!user?._id,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
   });
 
@@ -86,11 +87,11 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
   const likeMutation = useMutation({
     mutationFn: toggleLike,
     onMutate: async ({ postId, isLiked }) => {
-      await queryClient.cancelQueries({ queryKey: ['posts', user._id] });
-      const previousPosts = queryClient.getQueryData(['posts', user._id]);
+      await queryClient.cancelQueries({ queryKey: ['posts', user?._id ] });
+      const previousPosts = queryClient.getQueryData(['posts', user?._id ]);
 
       // Optimistically update the cache
-      queryClient.setQueryData(['posts', user._id], (oldData: any) => {
+      queryClient.setQueryData(['posts', user?._id], (oldData: any) => {
         if (!oldData) return oldData;
 
         return {
@@ -326,7 +327,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
       {/* End of Feed Message */}
       {!hasNextPage && posts.length > 0 && (
         <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
-          You've reached the end of your feed
+          You&apos;ve reached the end of your feed
         </div>
       )}
     </div>

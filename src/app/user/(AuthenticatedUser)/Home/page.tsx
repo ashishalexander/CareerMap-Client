@@ -6,12 +6,11 @@ import { PostFeed } from './components/PostCard';
 import { UserProfile } from './components/profile';
 import { RootState } from '@/app/store/store';
 import { useAppSelector } from '@/app/store/store';
-import { Iuser } from '@/const/Iuser';
 
 // Create QueryClient outside the component
 const queryClient = new QueryClient();
 
-const HomePage: React.FC<{ user: Iuser }> = () => {
+const HomePage: React.FC = () => {
   const user = useAppSelector((state: RootState) => state.auth.user);
 
   return (

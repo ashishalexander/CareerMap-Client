@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSocket } from '../../providers';
-import { Message } from '../Types/index';
+import { useChatMessage } from '../Types/index';
 import { chatApi } from '../api/chatApi';
 import { useAppSelector } from '@/app/store/store';
 
 export const useChat = (roomId: string) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<useChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const socket = useSocket();
   const currentUser = useAppSelector((state)=>state.auth.user)
@@ -24,7 +24,8 @@ export const useChat = (roomId: string) => {
           id: msg._id,
           content: msg.content,
           senderId: msg.sender._id,
-          timestamp: new Date(msg.createdAt).toISOString(),
+          receiverId: msg.receiver ? msg.receiver._id : null,
+          timestamp: new Date(msg.createdAt),
           type: msg.type || 'text'
         }));
         setMessages(transformedMessages);
@@ -50,7 +51,7 @@ export const useChat = (roomId: string) => {
     socket.emit('send_message', messageData);
   }, [socket, roomId]);
 
-    const handleNewMessage = useCallback((message: Message) => {
+    const handleNewMessage = useCallback((message: useChatMessage) => {
     if (!message) return;
 
     setMessages(prevMessages => {

@@ -31,7 +31,7 @@ export default function JobApplicationsPage() {
   const fetchRecruiterJobs = async () => {
     try {
       setLoading(true);
-      const response = await api.get<{ data: Job[] }>(`api/users/jobs/recruiter/${user?._id}`);
+      const response = await api.get<Job[]>(`api/users/jobs/recruiter/${user?._id}`);
       
       if (response.data && response.data.length > 0) {
         setJobs(response.data);
