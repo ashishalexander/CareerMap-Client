@@ -10,7 +10,7 @@ export const initSocket = (userId:string) => {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       transports: ['websocket', 'polling'], // Add this
-      withCredentials: true, // Add this
+      withCredentials: true, // Add this    
     });
 
      // Add more detailed logging

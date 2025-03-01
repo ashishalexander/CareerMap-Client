@@ -61,8 +61,9 @@ export const googleSignIn = createAsyncThunk<
       if (result?.error) {
         throw new Error(result.error);
       }
-
       const session = await getSession();
+      console.log("Session after sign in:", session);
+
       if (!session?.user) {
         throw new Error('No session found');
       }
@@ -70,9 +71,8 @@ export const googleSignIn = createAsyncThunk<
       // Save user data to your backend
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
-        { user:session.user }
-      );
-     
+        { user:session.user },
+      );  
       sessionStorage.setItem('accessToken',response.data.accessToken)
       return response.data;
     } catch (error) {

@@ -8,11 +8,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  // pages: {
-  //   signIn: '/user/Feed',
-  //   error: '/user/error', 
-  // },
-  // secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, account }) {
       // Persist the OAuth access_token to the token right after signin
