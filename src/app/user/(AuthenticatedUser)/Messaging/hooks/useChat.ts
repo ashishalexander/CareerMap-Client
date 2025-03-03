@@ -37,7 +37,7 @@ export const useChat = (roomId: string) => {
     };
 
     loadChatHistory();
-  }, [roomId, socket.id, currentUser]);
+  }, [roomId, socket?.id, currentUser]);
 
 
   const sendMessage = useCallback((content: string, receiverId: string) => {
@@ -48,7 +48,7 @@ export const useChat = (roomId: string) => {
       timestamp: new Date()
     };
 
-    socket.emit('send_message', messageData);
+    socket?.emit('send_message', messageData);
   }, [socket, roomId]);
 
     const handleNewMessage = useCallback((message: useChatMessage) => {
