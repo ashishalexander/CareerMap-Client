@@ -1,6 +1,6 @@
 // userMenu.tsx
 "use client"
-import React, { useCallback, useEffect} from 'react';
+import React, { useCallback} from 'react';
 import { useAppDispatch, useAppSelector } from '@/app/store/store';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -60,11 +60,11 @@ export const UserMenu = () => {
   }));
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user.firstName) {
-      router.push('/user/signIn');
-    }
-  }, [user.firstName, router]);
+  // useEffect(() => {
+  //   if (!user.firstName) {
+  //     router.push('/user/signIn');
+  //   }
+  // }, [user.firstName, router]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -76,16 +76,12 @@ export const UserMenu = () => {
     }
   }, [dispatch, router]);
 
-  if (!user.firstName) {
-    return null;
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.profilePicture} alt={user.firstName} />
-          <AvatarFallback>{user.firstName.charAt(0)}</AvatarFallback>
+          <AvatarImage src={user?.profilePicture} alt={user.firstName} />
+          <AvatarFallback>{user.firstName?.charAt(0)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

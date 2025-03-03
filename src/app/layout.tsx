@@ -1,12 +1,10 @@
-// app/layout.tsx
+"use client"
 import React from "react";
 import "./globals.css";
 import Providers from './components/Provider'
+import { SessionProvider } from 'next-auth/react';
 import { Toaster } from "sonner"; 
-export const metadata = {
-  title: "My App",
-  description: "A description of my app",
-};
+
 
 export default function RootLayout({
   children,
@@ -17,8 +15,10 @@ export default function RootLayout({
         <html lang="en">
           <body >
             <Providers>
+            <SessionProvider>
                 <Toaster />
                 {children}
+            </SessionProvider>
             </Providers>
           </body>
       </html>
