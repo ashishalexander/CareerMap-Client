@@ -54,7 +54,6 @@ export const googleSignIn = createAsyncThunk<
   async (_, { rejectWithValue }) => {
     try {
       const result = await signIn('google', { 
-        redirect: false,
         callbackUrl: '/user/Home'
       });
 
@@ -72,6 +71,7 @@ export const googleSignIn = createAsyncThunk<
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
         { user:session.user },
+        {withCredentials:true}
       );  
       sessionStorage.setItem('accessToken',response.data.accessToken)
       return response.data;
