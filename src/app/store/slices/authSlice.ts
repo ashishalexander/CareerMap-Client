@@ -77,6 +77,7 @@ export const googleSignIn = createAsyncThunk<
       sessionStorage.setItem('accessToken',response.data.accessToken)
       return response.data;
     } catch (error) {
+      window.alert(error)
       return rejectWithValue(handleError(error));
     }
   }
