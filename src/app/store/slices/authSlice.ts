@@ -54,6 +54,7 @@ export const googleSignIn = createAsyncThunk<
   async (_, { rejectWithValue }) => {
     try {
       const result = await signIn('google', { 
+        redirect: false,
         callbackUrl: '/user/Home'
       });
 
