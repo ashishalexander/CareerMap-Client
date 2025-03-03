@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/app/store/store';
-import { emailSignIn, googleSignIn, resetError } from '@/app/store/slices/authSlice';
+import { emailSignIn, resetError } from '@/app/store/slices/authSlice';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { SignInCredentials } from '../Types/auth';
@@ -7,14 +7,10 @@ import { SignInCredentials } from '../Types/auth';
 export const useAuth = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { loading, error, user } = useAppSelector((state: any) => state.auth);
+  const { loading, error } = useAppSelector((state: any) => state.auth);
 
   const handleEmailSignIn = async (credentials: SignInCredentials) => {
     await dispatch(emailSignIn(credentials));
-  };
-
-  const handleGoogleSignIn = async () => {
-    await dispatch(googleSignIn());
   };
 
   // Handle redirect after successful login
@@ -23,7 +19,7 @@ export const useAuth = () => {
     if (accessToken) {
       router.push('/user/Home');
     }
-  }, [user, router]);
+  });
 
   // Handle error reset
   useEffect(() => {
@@ -39,6 +35,5 @@ export const useAuth = () => {
     loading,
     error,
     handleEmailSignIn,
-    handleGoogleSignIn
   };
 };

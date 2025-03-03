@@ -1,5 +1,5 @@
 'use client'
-      import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
+import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { initSocket, getSocket } from '../../lib/socket';
 import { useAppSelector } from '@/app/store/store';
@@ -41,8 +41,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
 export const useSocket = () => {
   const socket = useContext(SocketContext);
-  if (!socket) {
-    throw new Error('useSocket must be used within a SocketProvider');
-  }
+  // if (!socket) {
+  //   throw new Error('useSocket must be used within a SocketProvider');
+  // }
   return socket;
 };

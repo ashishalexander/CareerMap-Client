@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Heart, MessageSquare, MoreVertical } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import api from '../../../../lib/axios-config';
-import { useRouter } from 'next/navigation';
 import { CommentSection } from './PostComment';
 import { cn } from '@/lib/utils';
 import { ReportModal } from './ReportPostModal';
@@ -53,18 +52,6 @@ export const PostFeed: React.FC<PostFeedProps> = ({ user }) => {
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [reportingPostId, setReportingPostId] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const router = useRouter();
-
-  // Authentication check
-  useEffect(() => {
-    if (!user) {
-      router.push('/user/singIn');
-    }
-  }, [user, router]);
-
-  // if (!user?._id) {
-  //   return null;
-  // }
 
   // Posts Query
   const {

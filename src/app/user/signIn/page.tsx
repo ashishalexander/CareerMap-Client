@@ -3,11 +3,17 @@ import React, { useState } from 'react';
 import { SignInForm } from './components/SignInForm';
 import { WelcomeSection } from './components/WelcomeSession';
 import { useAuth } from './hooks/useAuth';
+import { useGoogleAuth } from './hooks/useGoogleAuth';
 
 const SignInPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { loading, error, handleEmailSignIn, handleGoogleSignIn } = useAuth();
+  const { loading: emailLoading, error: emailError, handleEmailSignIn } = useAuth();
+  const { loading: googleLoading, error: googleError, handleGoogleSignIn } = useGoogleAuth();
+
+  // Combined loading and error states
+  const loading = emailLoading || googleLoading;
+  const error = emailError || googleError;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
