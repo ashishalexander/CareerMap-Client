@@ -91,7 +91,14 @@ export const saveOAuthUserData = createAsyncThunk<
   try {
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
-      { user: userData }
+      { user: userData },
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }
     );
 
     // Store the access token
