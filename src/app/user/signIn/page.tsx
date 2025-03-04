@@ -9,7 +9,7 @@ const SignInPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { loading: emailLoading, error: emailError, handleEmailSignIn } = useAuth();
-  const { loading: googleLoading, error: googleError, handleGoogleSignIn } = useGoogleAuth();
+  const { isLoading: googleLoading, error: googleError, handleGoogleSignIn } = useGoogleAuth();
 
   // Combined loading and error states
   const loading = emailLoading || googleLoading;
