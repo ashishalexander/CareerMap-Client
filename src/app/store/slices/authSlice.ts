@@ -83,28 +83,30 @@ export const emailSignIn = createAsyncThunk(
 // );
 
 
-export const saveOAuthUserData = createAsyncThunk(
-  'auth/saveOAuthUserData',
-  async (userData: any, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
-        { user: userData },
-        { withCredentials: true }
-      );
-      
-      // Store the access token
-      sessionStorage.setItem('accessToken', response.data.accessToken);
-      
-      return {
-        accessToken: response.data.accessToken,
-        user: response.data.user
-      };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to save OAuth user data');
-    }
+export const saveOAuthUserData = createAsyncThunk<
+  { accessToken: string; user: any }, // Return type
+  any, // Argument type
+  { rejectValue: string }
+>("auth/saveOAuthUserData", async (userData: any, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/users/Oauth-datasave`,
+      { user: userData }
+    );
+
+    // Store the access token
+    sessionStorage.setItem("accessToken", response.data.accessToken);
+
+    return {
+      accessToken: response.data.accessToken,
+      user: response.data.user,
+    };
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || "Failed to save OAuth user data"
+    );
   }
-);
+});
 
 
 
