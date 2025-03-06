@@ -23,7 +23,7 @@ export const SignupInput: React.FC<SignupInputProps> = ({
   onChange,
   error
 }) => (
-  <div>
+  <div className="relative">
     <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
       {label}
     </label>
@@ -40,7 +40,7 @@ export const SignupInput: React.FC<SignupInputProps> = ({
         }`}
         placeholder={placeholder}
       />
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
+    {error && <p className="text-red-500 absolute text-sm mt-1 left-0">{error}</p>}
   </div>
 );

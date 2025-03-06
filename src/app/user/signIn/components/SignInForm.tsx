@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Mail, Lock, ArrowRight, Loader } from "lucide-react";
+import { SignInData, validateSignIn } from "../ValidationSchema/signIn"; 
 
 interface SignInFormProps {
   email: string;
@@ -22,6 +23,73 @@ export const SignInForm: React.FC<SignInFormProps> = ({
   onSubmit,
   onGoogleSignIn,
 }) => {
+  const [validationErrors, setValidationErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onEmailChange(e);
+    
+    const result = validateSignIn({ 
+      email: e.target.value, 
+      password: password 
+    });
+    
+    if (!result.success) {
+      const emailErrors = result.error.errors.find(err => err.path[0] === 'email');
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        email: emailErrors ? emailErrors.message : undefined 
+      }));
+    } else {
+      setValidationErrors(prev => ({ ...prev, email: undefined }));
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onPasswordChange(e);
+    
+    const result = validateSignIn({ 
+      email: email, 
+      password: e.target.value 
+    });
+    
+    if (!result.success) {
+      const passwordErrors = result.error.errors.find(err => err.path[0] === 'password');
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        password: passwordErrors ? passwordErrors.message : undefined 
+      }));
+    } else {
+      setValidationErrors(prev => ({ ...prev, password: undefined }));
+    }
+  };
+
+  // Enhanced submit handler with Zod validation
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const result = validateSignIn({ email, password });
+    
+    if (!result.success) {
+      // Convert Zod errors to a more manageable format
+      const errors = result.error.errors.reduce((acc, curr) => {
+        acc[curr.path[0] as keyof SignInData] = curr.message;
+        return acc;
+      }, {} as { [key in keyof SignInData]?: string });
+      
+      setValidationErrors(errors);
+    } else {
+      // Clear any previous validation errors
+      setValidationErrors({});
+      
+      // Proceed with form submission
+      onSubmit(e);
+    }
+  };
+
+
   return (
     <div className="w-full md:w-1/2 p-8 lg:p-12">
       <div className="max-w-md mx-auto">
@@ -34,7 +102,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={onSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-5">
             <div>
               <label
@@ -50,13 +118,19 @@ export const SignInForm: React.FC<SignInFormProps> = ({
                 <input
                   id="email"
                   type="email"
-                  required
                   value={email}
-                  onChange={onEmailChange}
-                  className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out sm:text-sm"
+                  onChange={handleEmailChange}
+                  className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                    validationErrors.email 
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                  } rounded-lg placeholder-gray-400 focus:outline-none transition duration-150 ease-in-out sm:text-sm`}
                   placeholder="Enter your email"
                 />
               </div>
+              {validationErrors.email && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
+              )}
             </div>
 
             <div>
@@ -73,13 +147,19 @@ export const SignInForm: React.FC<SignInFormProps> = ({
                 <input
                   id="password"
                   type="password"
-                  required
                   value={password}
-                  onChange={onPasswordChange}
-                  className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out sm:text-sm"
+                  onChange={handlePasswordChange}
+                  className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                    validationErrors.password 
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+                      : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                  } rounded-lg placeholder-gray-400 focus:outline-none transition duration-150 ease-in-out sm:text-sm`}
                   placeholder="Enter your password"
                 />
               </div>
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              )}
             </div>
           </div>
 

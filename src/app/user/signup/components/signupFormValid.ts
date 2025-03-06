@@ -22,12 +22,12 @@ const useFormValidation = (initialState: FormData) => {
   const validators = {
     firstName: (value: string) => {
       if (!value.trim()) return "First name is required";
-      if (value.length < 2) return "First name must be at least 2 characters";
+      if (value.length < 1) return "First name must be at least 1 characters";
       return "";
     },
     lastName: (value: string) => {
       if (!value.trim()) return "Last name is required";
-      if (value.length < 2) return "Last name must be at least 2 characters";
+      if (value.length < 1) return "Last name must be at least 1 characters";
       return "";
     },
     email: (value: string) => {

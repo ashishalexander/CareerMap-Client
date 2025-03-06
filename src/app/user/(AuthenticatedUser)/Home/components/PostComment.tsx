@@ -5,9 +5,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { Loader2, X } from 'lucide-react';
-import api from '../../../../lib/axios-config';
 import { cn } from '@/lib/utils';
 import { IPost, IUser } from '../Types/interfaces';
+import postApi from '../service';
 
 interface CommentSectionProps {
   isOpen: boolean;
@@ -20,10 +20,7 @@ interface CommentSectionProps {
 
 const addComment = async ({ postId, content, userId }: { postId: string; content: string; userId: string }) => {
   try {
-    const response = await api.post(`/api/users/Feeds/${postId}/comment`, {
-      content,
-      userId
-    });
+    const response = await postApi.addComment(postId, content, userId);
     return response.data;
   } catch (error) {
     console.error('Error adding comment:', error);
