@@ -9,22 +9,17 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import api from '../../../../lib/axios-config';
 import { CommentSection } from './PostComment';
 import { cn } from '@/lib/utils';
 import { ReportModal } from './ReportPostModal';
 import { PostResponse,IPost,IUser } from '../Types/interfaces';
+import postApi from '../service';
 
 
 
 const fetchPosts = async ({ pageParam = 1, userId }: { pageParam: number; userId: string }): Promise<PostResponse> => {
   try {
-    const response = await api.get<PostResponse>(`/api/users/home/feeds/${userId}`, {
-      params: {
-        page: pageParam,
-        limit: 10
-      }
-    });
+    const response = await postApi.fetchPosts(userId, pageParam);
     return response.data;
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -34,9 +29,7 @@ const fetchPosts = async ({ pageParam = 1, userId }: { pageParam: number; userId
 
 const toggleLike = async ({ postId, isLiked, userId }: { postId: string; isLiked: boolean; userId: string }) => {
   try {
-    const response = isLiked 
-      ? await api.delete(`/api/users/Feeds/${postId}/like/${userId}`)
-      : await api.post(`/api/users/Feeds/${postId}/like/${userId}`);
+    const response = await postApi.toggleLike(postId, userId, isLiked);
     return response.data;
   } catch (error) {
     console.error('Error toggling like:', error);

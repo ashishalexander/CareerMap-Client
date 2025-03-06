@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
-import api from '../../../../lib/axios-config';
+import postApi from '../service';
 
 const REPORT_REASONS = [
   { id: 'inappropriate', label: 'Inappropriate Content' },
@@ -37,12 +37,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, postI
       reason: string;
       details: string;
     }) => {
-      const response = await api.post('/api/users/posts/report', {
+      const response = await postApi.reportPost({
         postId,
         userId,
         reason,
-        details,
-        timestamp: new Date().toISOString()
+        details
       });
       return response.data;
     },

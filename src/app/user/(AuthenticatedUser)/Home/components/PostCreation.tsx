@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { PlusCircle, Briefcase, X, Trash2, Plus } from "lucide-react";
 import { useAppSelector } from '@/app/store/store';
 import { Separator } from "@/components/ui/separator";
-import api from '@/app/lib/axios-config';
 import { toast } from 'sonner';
+import postApi from '../service';
 
 const PostSchema = z.object({
   text: z.string().max(5000, { message: "Post text cannot exceed 5000 characters" }).optional(),
@@ -83,6 +83,10 @@ export const CreatePost: React.FC = () => {
   const [mediaDescription, setMediaDescription] = useState('');
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPostLoading, setIsPostLoading] = useState(false);
+  const [isJobLoading, setIsJobLoading] = useState(false);
+
+
 
   // Job post states
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
@@ -235,6 +239,8 @@ export const CreatePost: React.FC = () => {
     };
 
     try {
+      setIsPostLoading(true);
+
       PostSchema.parse(postData);
 
       const formData = new FormData();
@@ -249,9 +255,7 @@ export const CreatePost: React.FC = () => {
         }
       }
 
-      await api.post(`/api/users/activity/new-post/${userId}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await postApi.createPost(userId, formData);
 
       setArticleText('');
       removeSelectedFile();
@@ -262,6 +266,8 @@ export const CreatePost: React.FC = () => {
       if (error instanceof z.ZodError) {
         setValidationErrors(error.errors.map(err => err.message));
       }
+    }finally{
+      setIsPostLoading(false);
     }
   };
 
@@ -272,23 +278,11 @@ export const CreatePost: React.FC = () => {
     }
 
     try {
-      // Clean up the data before validation
-    // const cleanedJobPost = {
-    //   ...jobPost,
-    //   customQuestions: jobPost.customQuestions.map(q => ({
-    //     ...q,
-    //     // Remove empty options from multiple-choice questions
-    //     options: q.type === 'multiple-choice' 
-    //       ? q.options?.filter(opt => opt.trim().length > 0)
-    //       : undefined
-    //   }))
-    // };
+      setIsJobLoading(true); 
       JobPostSchema.parse(jobPost);
 
-      await api.post(`/api/users/activity/JobPost/${userId}`, {
-        ...jobPost,
-        recruiter: userId
-      });
+      await postApi.createJobPost(userId, jobPost);
+
 
       setJobPost({
         title: '',
@@ -320,6 +314,8 @@ export const CreatePost: React.FC = () => {
         });
         setFieldErrors(newErrors);
       }
+    } finally {
+      setIsJobLoading(false); 
     }
   };
 
@@ -445,10 +441,10 @@ export const CreatePost: React.FC = () => {
               {/* Submit Button */}
               <Button 
                 onClick={handleArticleSubmit}
-                disabled={(!articleText.trim() && !selectedFile) || validationErrors.length > 0}
+                disabled={isPostLoading || (!articleText.trim() && !selectedFile) || validationErrors.length > 0}
                 className="w-full"
               >
-                Post
+                {isPostLoading ? "Posting..." : "Post"}
               </Button>
             </div>
           </DialogContent>
@@ -697,9 +693,10 @@ export const CreatePost: React.FC = () => {
                 <div className="pt-4">
                   <Button 
                     onClick={handleJobPostSubmit}
+                    disabled={isJobLoading}
                     className="w-full"
                   >
-                    Post Job
+                    {isJobLoading ? "Posting Job..." : "Post Job"}  
                   </Button>
                 </div>
               </div>

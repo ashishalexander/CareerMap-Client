@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useFormValidation } from "@/app/utils/signupFormValid";
+import { useFormValidation } from "@/app/user/signup/components/signupFormValid";
 import { SignupInput } from "./components/Input";
 import { RoleSelect } from "./components/RoleSelect";
 import { WelcomeSection } from "./components/WelcomeSession";
