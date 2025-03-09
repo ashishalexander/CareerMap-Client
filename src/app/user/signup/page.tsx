@@ -20,7 +20,7 @@ const SignupPage: React.FC = () => {
   };
 
   const { formData, errors, handleChange, validateForm } = useFormValidation(initialState);
-  const { handleSubmit, isSubmitting } = useSignupSubmit();
+  const { handleSubmit, isSubmitting, serverError } = useSignupSubmit();
   const { fields } = useFormFields();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -44,6 +44,12 @@ const SignupPage: React.FC = () => {
               </div>
 
               <form onSubmit={onSubmit} className="space-y-6">
+                {/* Display server error if exists */}
+                {serverError && (
+                  <div className="p-3 rounded-md bg-red-50 border border-red-300">
+                    <p className="text-sm text-red-600">{serverError}</p>
+                  </div>
+                )}
                 <div className="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-4">
                   {fields.slice(0, 2).map((field) => (
                     <SignupInput

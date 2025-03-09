@@ -38,9 +38,6 @@ const MenuItems = React.memo(({ isRecruiter, onSignOut }: {
     <DropdownMenuItem asChild>
       <Link href="/user/SubscriptionDash">Subscription Details</Link>
     </DropdownMenuItem>
-    <DropdownMenuItem asChild>
-      <Link href="/settings">Settings</Link>
-    </DropdownMenuItem>
     <DropdownMenuSeparator />
     <DropdownMenuItem onClick={onSignOut}>
       Sign Out
@@ -59,13 +56,6 @@ export const UserMenu = () => {
     profilePicture: state.auth.user?.profile?.profilePicture
   }));
   const router = useRouter();
-
-  // useEffect(() => {
-  //   if (!user.firstName) {
-  //     router.push('/user/signIn');
-  //   }
-  // }, [user.firstName, router]);
-
   const handleSignOut = useCallback(async () => {
     try {
       await api.get('/api/users/logout');

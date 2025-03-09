@@ -20,6 +20,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import api from '@/app/lib/axios-config';
 import { updateUserProfileEducation } from '@/app/store/slices/authSlice';
 import { Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog';
 
 // Define the validation schema using zod
 const educationSchema = z.object({
@@ -97,6 +99,10 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
   const user = useSelector((state:RootState)=>state.auth.user) 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [educationToDelete, setEducationToDelete] = useState<string | null>(null);
+
+
 
   const {
     control,
@@ -145,10 +151,13 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
     }
   }, [editingIndex, reset, dispatch,user?._id]);
 
-  const handleDeleteEducation = async (index: string) => {
+  const handleDeleteEducation = async () => {
+    if (!educationToDelete) return;
     try {
-      const response = await api.delete<any>(`/api/users/delete/profile-education/${index}/${user?._id}`);
+      const response = await api.delete<any>(`/api/users/delete/profile-education/${educationToDelete}/${user?._id}`);
        dispatch(updateUserProfileEducation(response.data));
+       setIsDeleteDialogOpen(false);
+       setEducationToDelete(null);
     } catch (error) {
       console.error('Failed to delete education:', error);
     }
@@ -206,7 +215,7 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => handleDeleteEducation(index)}
+            onClick={() =>{ setEducationToDelete(index);setIsDeleteDialogOpen(true);}}
             className="hover:bg-red-100 text-black-500"
           >
             <Trash2 className="h-4 w-4" />
@@ -229,6 +238,7 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
   
 
   return (
+    <>
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Education</CardTitle>
@@ -361,6 +371,23 @@ const EducationProfileComponent: React.FC<EducationProfileComponentProps> = ({ i
         </Dialog>
       </CardContent>
     </Card>
+
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete this education entry. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDeleteEducation}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
+
   );
 };
 
