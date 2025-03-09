@@ -52,9 +52,6 @@ export const useGoogleAuth = () => {
         throw new Error(result.error);
       }
       
-      // Note: We don't set loading to false here since we want
-      // the useEffect to process the session when it becomes available
-      
     } catch (error: any) {
       setLoading(false);
       setError(error.message || "Failed to sign in with Google");

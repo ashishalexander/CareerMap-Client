@@ -60,7 +60,7 @@ export default function JobApplicationPage() {
       });
 
       // Redirect to success page
-      const successUrl = `/user/AuthenticatedUser/Jobs/JobApplication/${jobId}/success?` + 
+      const successUrl = `/user/Jobs/JobApplication/${jobId}/success?` + 
       new URLSearchParams({
         jobTitle: job?.title|| '',
         company: job?.company || '',

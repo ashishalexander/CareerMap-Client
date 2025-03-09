@@ -26,7 +26,7 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
     <div className="absolute -bottom-16 left-8">
       <div className="relative">
         <Image
-          src={image || "https://via.placeholder.com/150x150"}
+          src={image || "https://placehold.jp/120x120.png"}
           alt="profile pic"
           width={ 120}
           height={120}

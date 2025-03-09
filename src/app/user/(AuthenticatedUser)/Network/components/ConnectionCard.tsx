@@ -60,7 +60,7 @@ export function ConnectionCard({ user, onConnect }: ConnectionCardProps) {
 
           {/* User Details */}
           <div>
-            <h3 className="font-semibold text-lg">{user.firstName}</h3>
+            <h3 className="font-semibold text-lg">{user.firstName+" "+user.lastName}</h3>
             <p className="text-sm text-gray-600 mb-1">{user.profile.headline}</p>
             {user.profile.company && (
               <p className="text-sm text-gray-500 mb-1">{user.profile.company}</p>

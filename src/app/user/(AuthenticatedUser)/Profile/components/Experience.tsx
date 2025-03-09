@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import api from "@/app/lib/axios-config";
 import { updateUserProfileExperience } from "@/app/store/slices/authSlice";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 // Define the base experience interface
 export interface IExperience {
@@ -81,6 +83,9 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
     description: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [experienceToDelete, setExperienceToDelete] = useState<string | null>(null);
+
 
  
   const validateForm = () => {
@@ -132,10 +137,15 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
     [editingIndex, formData, user?._id]
   );
 
-  const handleDeleteExperience = async (id: string) => {
-    if (!user?._id) return;
+  const handleConfirmDeleteExperience = (id: string) => {
+    setExperienceToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteExperience = async () => {
+    if (!experienceToDelete || !user?._id) return;
     try {
-      const response = await api.delete<any>(`/api/users/delete/profile-experience/${user._id}/${id}`);
+      const response = await api.delete<any>(`/api/users/delete/profile-experience/${user._id}/${experienceToDelete}`);
       dispatch(updateUserProfileExperience(response.data))
 
       // Handle successful deletion (e.g., refresh the experiences list)
@@ -257,6 +267,7 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
   );
 
   return (
+    <>
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Experience</CardTitle>
@@ -279,7 +290,7 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
             expobj={experience}
             index={experience._id}
             onEdit={handleStartEdit}
-            onDelete={handleDeleteExperience}
+            onDelete={handleConfirmDeleteExperience}
             isOwnProfile={isOwnProfile}
           />
         ))}
@@ -376,6 +387,22 @@ const ExperienceProfileComponent: React.FC<ExperienceProfileComponentProps> = ({
         </Dialog>
       </CardContent>
     </Card>
+
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this experience entry. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteExperience}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

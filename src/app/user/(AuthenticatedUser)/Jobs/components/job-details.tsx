@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { IJob } from '../Types/Job';
 import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/app/store/store';
 
 interface JobDetailsProps {
   job: IJob;
@@ -9,6 +10,8 @@ interface JobDetailsProps {
 
 export function JobDetails({ job }: JobDetailsProps) {
   const router = useRouter();
+  const userRole = useAppSelector((state) => state.auth.user?.role); // Get the user role
+
   
   const handleApply = () => {
     router.push(`/user/Jobs/JobApplication/${job._id}`);
@@ -79,8 +82,9 @@ export function JobDetails({ job }: JobDetailsProps) {
             <p className="text-lg font-semibold">Salary: {job.salary}</p>
             <p className="text-gray-500">Contact: {job.contactEmail}</p>
           </div>
-          <Button onClick={handleApply}>Apply Now</Button>
-        </CardFooter>
+          {userRole === 'user' && (
+            <Button onClick={handleApply}>Apply Now</Button>
+          )}        </CardFooter>
       </Card>
     </div>
   );
