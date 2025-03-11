@@ -1,5 +1,5 @@
 // axios-config.ts
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosRequestConfig } from 'axios';
 import { store } from '../../store/store';
 import { signOut } from '../../store/slices/authSlice';
 
@@ -95,8 +95,14 @@ export interface ApiResponse<T> {
 export const api = {
   get: <T>(url: string, config = {}) =>
     apiClient.get<ApiResponse<T>>(url, config).then((response) => response.data),
-  post: <T>(url: string, data = {}, config = {}) =>
-    apiClient.post<ApiResponse<T>>(url, data, config).then((response) => response.data),
+  post: async <T>(url: string, data = {}, config: AxiosRequestConfig = {}) => {
+    if (config.responseType === 'blob') {
+      const response = await apiClient.post(url, data, config);
+      return response.data;
+    }
+    const response_1 = await apiClient.post<ApiResponse<T>>(url, data, config);
+    return response_1.data;
+  },
   put: <T>(url: string, data = {}, config = {}) =>
     apiClient.put<ApiResponse<T>>(url, data, config).then((response) => response.data),
   patch: <T>(url: string, data = {}, config = {}) =>

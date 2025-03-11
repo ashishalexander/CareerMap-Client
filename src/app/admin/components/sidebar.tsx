@@ -1,10 +1,10 @@
 'use client';
 import React from 'react';
-import { Home, Users, Settings, LogOut, Bell, Shield,CreditCard } from 'lucide-react';
+import { Home, Users, Settings, LogOut, Bell, Shield,CreditCard, BarChart } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAppDispatch } from '../../store/store'; // Import useAppDispatch
-import { logoutAdmin } from '../../store/slices/adminSlice'; // Import the logout action
+import { useAppDispatch } from '../../store/store'; 
+import { logoutAdmin } from '../../store/slices/adminSlice'; 
 
 // Sidebar item configuration
 const sidebarItems = [
@@ -29,7 +29,7 @@ const sidebarItems = [
     route: '/admin/Notifications'
   },
   { 
-    icon: <Shield size={20} />, // Added Shield icon for content moderation
+    icon: <Shield size={20} />, 
     label: 'Content Moderation', 
     route: '/admin/ContentMod'
   },
@@ -39,10 +39,15 @@ const sidebarItems = [
     route: '/admin/subscriptionManagement'
   },
   { 
+    icon: <BarChart size={20} />, 
+    label: 'Reports', 
+    route: '/admin/Reports'
+  },
+  { 
     icon: <LogOut size={20} />, 
     label: 'Logout', 
-    route: '', // Remove route for logout item
-    onClick: 'logout' // Special identifier for logout
+    route: '', 
+    onClick: 'logout' 
   },  
 ];
 
@@ -58,7 +63,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, route, isActive,
   return (
     <li>
       <Link
-        href={route || '#'} // Prevent navigation if no route
+        href={route || '#'} 
         aria-current={isActive ? 'page' : undefined}
         aria-label={label}
         className={`flex items-center space-x-3 p-2 rounded-lg font-medium transition-all duration-200 ${
@@ -66,7 +71,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, route, isActive,
             ? 'bg-gray-300 text-blue-600' 
             : 'text-gray-700 hover:bg-gray-200'
         }`}
-        onClick={onClick} // Pass onClick to Link component
+        onClick={onClick} 
       >
         <span className="w-5 h-5">{icon}</span>
         <span>{label}</span>
