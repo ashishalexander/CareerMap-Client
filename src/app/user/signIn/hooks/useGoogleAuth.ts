@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '../../../store/store';
@@ -10,12 +10,18 @@ export const useGoogleAuth = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const prevValues = useRef({ session, status, dispatch, router });
 
-  // This effect will run when the session changes
+
   useEffect(() => {
+    console.log("useEffect triggered!");
+    console.log("Previous values:", prevValues.current);
+    console.log("New values:", { session, status, dispatch, router });
+  
+    prevValues.current = { session, status, dispatch, router };
     const handleSessionData = async () => {
       // Process the session when it becomes available and we've started a sign-in attempt
-      if (session?.user && loading && status === 'authenticated') {
+      if (session?.user  && status === 'authenticated') {
         try {
           console.log("Processing Google session data:", session.user);
           
@@ -38,7 +44,7 @@ export const useGoogleAuth = () => {
     };
 
     handleSessionData();
-  }, [session, status, loading, dispatch, router]);
+  }, [session, status,  dispatch, router]);
 
   const handleGoogleSignIn = async () => {
     try {

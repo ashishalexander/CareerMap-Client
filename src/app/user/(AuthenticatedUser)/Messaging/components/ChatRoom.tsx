@@ -42,6 +42,9 @@
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isCleaningUp, setIsCleaningUp] = useState(false);
     const [callTimeoutId, setCallTimeoutId] = useState<NodeJS.Timeout | null>(null);
+    const callStatusRef = useRef("idle");
+    
+
 
 
     
@@ -130,17 +133,22 @@
   }
 };
 
+useEffect(() => {
+  callStatusRef.current = callStatus;
+}, [callStatus]);
+
+
 const startCallTimeoutTimer = () => {
   console.log("starting")
   const timeoutId = setTimeout(() => {
     console.log("checking call status:",callStatus)
-    if (callStatus !== "in-call") {
+    if (callStatusRef.current !== "in-call") {
       toast.error("Call not answered", {
         description: "The call was not answered. Please try again later.",
       });
       endVideoCall();
     }
-  }, 30000); // 30 seconds timeout
+  }, 30000); 
   
   return timeoutId;
 };
@@ -251,7 +259,7 @@ const startCallTimeoutTimer = () => {
         });
 
         peerRef.current = peer;
-        console.log("start video call ☁️",peerRef.current)
+        console.log("start video call ",peerRef.current)
 
         socket?.emit("initiate_video_call", {
           roomId,
@@ -268,15 +276,14 @@ const startCallTimeoutTimer = () => {
 
     const handleIncomingCall = async () => {
       try {
-        // Don't cleanup immediately for incoming calls
-        // Only cleanup existing call if there is one
-        if (callStatus === "in-call") {
-          cleanup();
+        if (callTimeoutId) {
+          clearTimeout(callTimeoutId);
+          setCallTimeoutId(null);
         }
         
         console.log("Handling incoming call...");
         setIsVideoCallActive(true);
-        // setCallStatus("in-call");
+        setCallStatus("in-call");
 
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -309,7 +316,6 @@ const startCallTimeoutTimer = () => {
 
         // Create peer only if it doesn't exist
         if (!peerRef.current) {
-          console.log('👌')
           const peer = new Peer({
             initiator: false,
             trickle: false,
@@ -322,8 +328,8 @@ const startCallTimeoutTimer = () => {
             }
           });
           peerRef.current = peer;
-          console.log("handle Incomming video call peerRef.current ⛈️",peerRef.current)
-          console.log("hanlde incomming video call 📽️",peer)
+          console.log("handle Incomming video call peerRef.current",peerRef.current)
+          console.log("hanlde incomming video call",peer)
 
           peer.on("signal", (signalData) => {
             console.log("Answering peer generated signal:", signalData);
@@ -338,6 +344,10 @@ const startCallTimeoutTimer = () => {
           peer.on("connect", () => {
             console.log("Peer connection established");
             setCallStatus("in-call");
+            if (callTimeoutId) {
+              clearTimeout(callTimeoutId);
+              setCallTimeoutId(null);
+            }
           });
 
           peer.on("stream", (remoteVideoStream) => {

@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RootState } from '@/app/store/store';
 import api from '../../lib/axios-config';
+import { signOut as nextAuthSignOut } from 'next-auth/react';
+
 
 // Separate menu items component for better memoization
 const MenuItems = React.memo(({ isRecruiter, onSignOut }: { 
@@ -60,6 +62,11 @@ export const UserMenu = () => {
     try {
       await api.get('/api/users/logout');
       dispatch(signOut());
+      await nextAuthSignOut({ 
+        callbackUrl: '/user/signIn',
+        redirect: false
+      });
+      
       router.push('/user/signIn');
     } catch (error) {
       console.error('Logout failed', error);
@@ -92,3 +99,5 @@ export const UserMenu = () => {
 };
 
 export default React.memo(UserMenu);
+
+
