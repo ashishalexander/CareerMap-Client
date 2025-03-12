@@ -60,15 +60,6 @@ export function ConnectionCard({ user, onConnect }: ConnectionCardProps) {
 
           {/* User Details */}
           <div>
-            <h3 className="font-semibold text-lg">{user.firstName+" "+user.lastName}</h3>
-            <p className="text-sm text-gray-600 mb-1">{user.profile.headline}</p>
-            {user.profile.company && (
-              <p className="text-sm text-gray-500 mb-1">{user.profile.company}</p>
-            )}
-            {user.profile.location && (
-              <p className="text-sm text-gray-500 mb-1">{user.profile.location}</p>
-            )}
-
             {/* Action Buttons with Connection Status */}
             <div className="flex gap-2">
               {user.connectionStatus === 'pending' ? (
