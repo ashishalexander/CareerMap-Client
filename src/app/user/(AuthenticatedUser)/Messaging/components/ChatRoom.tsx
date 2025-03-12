@@ -12,6 +12,7 @@
     MicOff,
     Phone,
     Lock,
+    User,
   } from "lucide-react";
   import { ChatMessage } from "./ChatMessage";
   import { useChat } from "../hooks/useChat";
@@ -45,7 +46,8 @@
     const callStatusRef = useRef("idle");
     
 
-
+    const [showIncomingCallDialog, setShowIncomingCallDialog] = useState(false);
+    const [incomingCallFrom, setIncomingCallFrom] = useState("");
 
     
     const subscription = useAppSelector((state) => state.auth.user?.subscription);
@@ -146,6 +148,8 @@ const startCallTimeoutTimer = () => {
       toast.error("Call not answered", {
         description: "The call was not answered. Please try again later.",
       });
+      setShowIncomingCallDialog(false);
+      setIncomingCallFrom("");
       endVideoCall();
     }
   }, 30000); 
@@ -276,6 +280,8 @@ const startCallTimeoutTimer = () => {
 
     const handleIncomingCall = async () => {
       try {
+        setShowIncomingCallDialog(false);
+        setIncomingCallFrom("");
         if (callTimeoutId) {
           clearTimeout(callTimeoutId);
           setCallTimeoutId(null);
@@ -395,6 +401,18 @@ const startCallTimeoutTimer = () => {
       }
     };
 
+      // Function to reject incoming call
+  const rejectIncomingCall = () => {
+    socket?.emit("reject_video_call", {
+      roomId,
+      from: userId,
+      to: incomingCallFrom,
+    });
+    setShowIncomingCallDialog(false);
+    setIncomingCallFrom("");
+  };
+
+
     // End Video Call
     const endVideoCall = () => {
       socket?.emit("end_video_call", {
@@ -446,18 +464,8 @@ const startCallTimeoutTimer = () => {
         }
         console.log("Received incoming call:", data);
         if (data.to === userId && data.roomId === roomId) {
-          const acceptCall = window.confirm("Incoming video call. Accept?");
-          if (acceptCall) {
-            setIsVideoCallActive(true);
-            setCallStatus("in-call");
-            await handleIncomingCall();
-          } else {
-            socket.emit("reject_video_call", {
-              roomId,
-              from: userId,   
-              to: data.from,
-            });
-          }
+          setIncomingCallFrom(data.from);
+          setShowIncomingCallDialog(true);
         }
       });
 
@@ -489,11 +497,17 @@ const startCallTimeoutTimer = () => {
       });
 
       socket.on("end_video_call", () => {
+        console.log("Call ended by the other user");
+        setShowIncomingCallDialog(false);
+        setIncomingCallFrom("");
         cleanup();
       });
 
       socket.on("video_call_rejected", () => {
-        alert("Call was rejected");
+        toast.error("Call Declined", {
+          description: "The recipient declined your call",
+          duration: 5000
+        });
         cleanup();
       }); 
 
@@ -554,6 +568,39 @@ const startCallTimeoutTimer = () => {
 
     return (
       <div className="flex flex-col h-full relative">
+         {/* Incoming Call Dialog */}
+      {showIncomingCallDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-sm w-full mx-4 animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center mb-6">
+              <div className="h-20 w-20 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-4">
+                <User className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold">Incoming Video Call</h3>
+              <div className="mt-2 mb-6 h-2 w-full flex space-x-1 justify-center">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse delay-0"></div>
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse delay-300"></div>
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse delay-600"></div>
+              </div>
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button 
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                onClick={rejectIncomingCall}
+              >
+                Decline
+              </Button>
+              <Button 
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                onClick={handleIncomingCall}
+              >
+                Accept
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
         {/* Video Call UI */}
         {isVideoCallActive && (
         <div className="fixed inset-0 z-50 bg-black/90">
